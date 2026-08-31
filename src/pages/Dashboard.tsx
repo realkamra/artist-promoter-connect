@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
+import { FloatingDock, createArtistDockItems } from "@/components/FloatingDock";
 import { ArrowRight, Check, Headphones, LogOut, Search, SlidersHorizontal, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useNavigate } from "react-router";
@@ -21,8 +22,9 @@ export default function Dashboard() {
   const filtered = useMemo(() => promoters.filter((p) => `${p.name} ${p.location} ${p.genres.join(" ")}`.toLowerCase().includes(query.toLowerCase())), [query]);
 
   const handleSignOut = async () => { await signOut(); navigate("/"); };
+  const dockItems = createArtistDockItems({ onSignOut: handleSignOut });
   return (
-    <main className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-background pb-24 text-foreground">
       <header className="border-b border-border bg-sidebar/70">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-8">
           <button onClick={() => navigate("/")} className="flex items-center gap-3">
@@ -44,7 +46,7 @@ export default function Dashboard() {
           </div>
           <div className="rounded-2xl border border-border bg-card px-5 py-4"><h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Profile strength</h2><div className="mt-2 flex items-center gap-3"><div className="h-2 w-28 overflow-hidden rounded-full bg-muted"><div className="h-full w-4/5 rounded-full bg-green" /></div><span className="text-sm font-bold">80%</span></div></div>
         </div>
-        <div className="mb-7 flex flex-col gap-3 sm:flex-row" role="search">
+        <div id="matches" className="mb-7 flex flex-col gap-3 sm:flex-row" role="search">
           <label htmlFor="promoter-search" className="sr-only">Search promoters</label>
           <div className="relative flex-1">
             <Search className="absolute left-3 top-3 size-4 text-muted-foreground" />
@@ -75,6 +77,7 @@ export default function Dashboard() {
         </ul>
         {filtered.length === 0 && <div className="rounded-2xl border border-dashed border-border bg-sidebar p-12"><div className="flex flex-col items-center gap-3"><div className="flex size-12 items-center justify-center rounded-xl bg-muted"><Search className="size-5 text-muted-foreground" /></div><p className="text-sm text-muted-foreground">No promoters match that search yet.</p><p className="text-xs text-muted-foreground/60">Try a different genre, city, or promoter.</p></div></div>}
       </div>
+      <FloatingDock items={dockItems} />
     </main>
   );
 }

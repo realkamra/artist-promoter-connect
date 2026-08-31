@@ -77,7 +77,6 @@ createRoot(document.getElementById("root")!).render(
                   </RequireAuth>
                 }
               />
-              <Route path="*" element={<NotFound />} />
               <Route
                 path="/demo"
                 element={
@@ -86,6 +85,7 @@ createRoot(document.getElementById("root")!).render(
                   </RequireAuth>
                 }
               />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
         </BrowserRouter>
