@@ -7,7 +7,7 @@ import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
 import { StrictMode, useEffect, lazy, Suspense } from "react";
 import { createRoot } from "react-dom/client";
-import { HashRouter, Route, Routes, useLocation } from "react-router";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import "./index.css";
 import "./types/global.d.ts";
 
@@ -60,7 +60,7 @@ createRoot(document.getElementById("root")!).render(
     <VlyToolbar />
     <InstrumentationProvider>
       <ConvexAuthProvider client={convex}>
-        <HashRouter>
+        <BrowserRouter basename="/artist-promoter-connect">
           <RouteSyncer />
           <Suspense fallback={<RouteLoading />}>
             <Routes>
@@ -88,7 +88,7 @@ createRoot(document.getElementById("root")!).render(
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
-        </HashRouter>
+        </BrowserRouter>
         <Toaster />
       </ConvexAuthProvider>
     </InstrumentationProvider>
