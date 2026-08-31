@@ -4,8 +4,12 @@ import react from "@vitejs/plugin-react";
 import path from "path";
 import { defineConfig } from "vite";
 
+const repositoryName = process.env.GITHUB_REPOSITORY?.split("/").pop();
+const isGitHubPagesBuild = Boolean(process.env.GITHUB_ACTIONS && repositoryName);
+
 // https://vite.dev/config/
 export default defineConfig({
+  base: isGitHubPagesBuild ? `/${repositoryName}/` : "/",
   plugins: [vlyPlugin(), react(), tailwindcss()],
   resolve: {
     alias: {
