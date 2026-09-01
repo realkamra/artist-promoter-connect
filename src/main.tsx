@@ -51,7 +51,9 @@ function SetupError({ title, message }: { title: string; message: string }) {
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#f38ba8]">
           Configuration error
         </p>
-        <h1 className="mt-3 text-2xl font-semibold text-[#f5e0dc]">{title}</h1>
+        <h1 className="mt-3 text-2xl font-semibold text-[#f5e0dc]">
+          {title}
+        </h1>
         <pre className="mt-5 max-h-96 overflow-auto rounded-lg bg-[#11111b] p-4 font-mono text-xs text-[#a6adc8]">
           {message}
         </pre>
@@ -64,4 +66,89 @@ function App() {
   const convexUrl = import.meta.env.VITE_CONVEX_URL as string | undefined;
 
   if (!convexUrl) {
-    return
+    return (
+      <SetupError
+        title="sonar/match is not configured"
+        message={MISSING_URL_LINES}
+      />
+    );
+  }
+
+  const convex = useMemo(
+    () => new ConvexReactClient(convexUrl),
+    [convexUrl],
+  );
+
+  return (
+    <ConvexAuthProvider client={convex}>
+      <BrowserRouter basename="/artist-promoter-connect">
+        <RouteSyncer />
+        <Suspense fallback={<RouteLoading />}>
+          <Routes>
+            <Route path="/" element={<Landing />} />
+            <Route
+              path="/auth"
+              element={<AuthPage redirectAfterAuth="/dashboard" />}
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <RequireAuth>
+                  <Dashboard />
+                </RequireAuth>
+              }
+            />
+            <Route
+              path="/demo"
+              element={
+                <RequireAuth>
+                  <StatefulButtonDemo />
+                </RequireAuth>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
+      </BrowserRouter>
+    </ConvexAuthProvider>
+  );
+}
+
+function RouteSyncer() {
+  const location = useLocation();
+
+  useEffect(() => {
+    window.parent.postMessage(
+      { type: "iframe-route-change", path: location.pathname },
+      "*",
+    );
+  }, [location.pathname]);
+
+  useEffect(() => {
+    function handleMessage(event: MessageEvent) {
+      if (event.data?.type === "navigate") {
+        if (event.data.direction === "back") {
+          window.history.back();
+        }
+        if (event.data.direction === "forward") {
+          window.history.forward();
+        }
+      }
+    }
+
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, []);
+
+  return null;
+}
+
+function Root() {
+  return (
+    <StrictMode>
+      <VlyToolbar />
+      <InstrumentationProvider>
+        <App />
+      </InstrumentationProvider>
+      <Toaster />
+   
