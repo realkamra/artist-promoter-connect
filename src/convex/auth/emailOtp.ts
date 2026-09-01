@@ -1,10 +1,37 @@
 import { Email } from "@convex-dev/auth/providers/Email";
+import { Resend } from "resend";
 
 export const emailOtp = Email({
   id: "email-otp",
-  sendVerificationRequest: async ({ identifier, token }) => {
-    console.log(
-      `Verification code for ${identifier}: ${token}`,
-    );
+
+  async sendVerificationRequest({ identifier, token }) {
+    const apiKey = process.env.RESEND_API_KEY;
+
+    if (!apiKey) {
+      throw new Error("Missing RESEND_API_KEY in the Convex deployment.");
+    }
+
+    const resend = new Resend(apiKey);
+
+    const { error } = await resend.emails.send({
+      from: "onboarding@resend.dev",
+      to: identifier,
+      subject: "Your sonar/match verification code",
+      text: `Your sonar/match verification code is ${token}. It expires soon.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2>Your sonar/match verification code</h2>
+          <p>Enter this code to continue:</p>
+          <p style="font-size: 28px; font-weight: bold; letter-spacing: 6px;">
+            ${token}
+          </p>
+          <p>This code expires soon. If you did not request it, you can ignore this email.</p>
+        </div>
+      `,
+    });
+
+    if (error) {
+      throw new Error(`Failed to send verification email: ${error.message}`);
+    }
   },
 });
