@@ -5,9 +5,6 @@ import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
 import { RequireAuth } from "@/components/RequireAuth";
 import { Toaster } from "@/components/ui/sonner";
-import { InstrumentationProvider } from "@/instrumentation.tsx";
-import { VlyToolbar } from "../vly-toolbar-readonly.tsx";
-import "@vly-ai/integrations";
 import "./index.css";
 import "./types/global.d.ts";
 
@@ -83,10 +80,7 @@ function App() {
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
-    <VlyToolbar />
-    <InstrumentationProvider>
-      <App />
-    </InstrumentationProvider>
+    <App />
     <Toaster />
   </StrictMode>
 );
