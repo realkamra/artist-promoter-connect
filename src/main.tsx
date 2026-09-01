@@ -36,10 +36,15 @@ function RouteLoading() {
   );
 }
 
-function RuntimeErrorScreen({ message }: { message: string }) {
+function RuntimeErrorScreen({ error }: { error: unknown }) {
+  const errorString =
+    error instanceof Error
+      ? `${error.name}: ${error.message}\n\n${error.stack ?? ""}`
+      : String(error);
+
   return (
     <main className="flex min-h-screen items-center justify-center bg-[#11111b] px-6 text-[#cdd6f4]">
-      <div className="w-full max-w-lg rounded-2xl border border-[#f38ba8]/30 bg-[#1e1e2e] p-6">
+      <div className="w-full max-w-2xl rounded-2xl border border-[#f38ba8]/30 bg-[#1e1e2e] p-6">
         <p className="font-mono text-xs uppercase tracking-[0.2em] text-[#f38ba8]">
           Runtime error
         </p>
@@ -47,11 +52,10 @@ function RuntimeErrorScreen({ message }: { message: string }) {
           sonar/match could not start
         </h1>
         <p className="mt-3 text-sm leading-6 text-[#a6adc8]">
-          Check the browser console for the complete error and verify that the
-          production Convex URL is configured in GitHub Actions.
+          Copy everything in the box below and share it:
         </p>
-        <pre className="mt-5 overflow-auto rounded-lg bg-[#11111b] p-4 text-xs text-[#f38ba8]">
-          {message}
+        <pre className="mt-5 max-h-96 overflow-auto rounded-lg bg-[#11111b] p-4 text-xs text-[#f38ba8]">
+          {errorString}
         </pre>
       </div>
     </main>
@@ -60,20 +64,20 @@ function RuntimeErrorScreen({ message }: { message: string }) {
 
 class AppErrorBoundary extends React.Component<
   { children: React.ReactNode },
-  { error: Error | null }
+  { error: unknown }
 > {
   constructor(props: { children: React.ReactNode }) {
     super(props);
     this.state = { error: null };
   }
 
-  static getDerivedStateFromError(error: Error) {
+  static getDerivedStateFromError(error: unknown) {
     return { error };
   }
 
   render() {
     if (this.state.error) {
-      return <RuntimeErrorScreen message={this.state.error.message} />;
+      return <RuntimeErrorScreen error={this.state.error} />;
     }
 
     return this.props.children;
@@ -120,7 +124,7 @@ const convexUrl = import.meta.env.VITE_CONVEX_URL;
 
 if (!convexUrl) {
   throw new Error(
-    "VITE_CONVEX_URL is missing. Add it to GitHub Actions repository secrets and redeploy.",
+    "VITE_CONVEX_URL is missing from GitHub Actions secrets. Go to Settings → Secrets and variables → Actions → New repository secret and add VITE_CONVEX_URL with the value https://jovial-lynx-583.convex.cloud",
   );
 }
 
