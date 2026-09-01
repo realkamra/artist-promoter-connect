@@ -279,16 +279,23 @@ export default function Dashboard() {
             >
               <article>
                 <div className="flex items-start gap-4">
-                  <button
-                    type="button"
-                    className={`flex size-12 shrink-0 items-center justify-center rounded-lg bg-${promoter.tone}/15 font-mono text-sm font-bold text-${promoter.tone} transition group-hover:scale-105`}
-                    aria-label={`View details for ${promoter.name}`}
+                  <div
+                    className={`flex size-12 shrink-0 items-center justify-center rounded-lg font-mono text-sm font-bold transition group-hover:scale-105 ${
+                      promoter.tone === "pink"
+                        ? "bg-[#f5c2e7]/15 text-[#f5c2e7]"
+                        : promoter.tone === "blue"
+                          ? "bg-[#89dceb]/15 text-[#89dceb]"
+                          : promoter.tone === "yellow"
+                            ? "bg-[#f9e2af]/15 text-[#f9e2af]"
+                            : "bg-[#a6e3a1]/15 text-[#a6e3a1]"
+                    }`}
+                    aria-hidden="true"
                   >
                     {promoter.name
                       .split(" ")
                       .map((namePart) => namePart[0])
                       .join("")}
-                  </button>
+                  </div>
 
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
