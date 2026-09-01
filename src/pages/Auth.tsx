@@ -1,6 +1,5 @@
 import { Suspense, useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router";
-
 import { ArrowRight, Loader2, Mail, Radio, UserX } from "lucide-react";
 
 import { useAuth } from "@/hooks/use-auth";
@@ -65,8 +64,11 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
     try {
       const formData = new FormData(event.currentTarget);
+      const email = String(formData.get("email") ?? "").trim();
+
       await signIn("email-otp", formData);
-      setStep({ email: formData.get("email") as string });
+      setStep({ email });
+      setOtp("");
     } catch (errorValue) {
       setError(
         errorValue instanceof Error
@@ -82,14 +84,30 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
     event: React.FormEvent<HTMLFormElement>,
   ) => {
     event.preventDefault();
+
+    if (otp.length !== 6) {
+      setError("Enter the complete six-digit verification code.");
+      return;
+    }
+
+    if (step === "signIn") {
+      return;
+    }
+
     setIsLoading(true);
     setError(null);
 
     try {
-      await signIn("email-otp", new FormData(event.currentTarget));
+      const formData = new FormData();
+      formData.set("email", step.email);
+      formData.set("code", otp);
+
+      await signIn("email-otp", formData);
       navigate(redirect);
     } catch {
-      setError("The verification code you entered is incorrect.");
+      setError(
+        "That code could not be verified. Request a new code and use the newest email.",
+      );
       setOtp("");
     } finally {
       setIsLoading(false);
@@ -147,6 +165,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                 <CardTitle className="text-2xl text-[#f5e0dc]">
                   Find your people.
                 </CardTitle>
+
                 <CardDescription className="text-[#a6adc8]">
                   Sign in to discover promoters matched to your music.
                 </CardDescription>
@@ -157,6 +176,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                   <div className="flex gap-2">
                     <div className="relative flex-1">
                       <Mail className="absolute left-3 top-3 size-4 text-[#6c7086]" />
+
                       <Input
                         name="email"
                         placeholder="you@artist.com"
@@ -205,6 +225,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                 <CardTitle className="text-[#f5e0dc]">
                   Check your email
                 </CardTitle>
+
                 <CardDescription className="text-[#a6adc8]">
                   We've sent a six-digit code to {step.email}
                 </CardDescription>
@@ -212,15 +233,13 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
               <form onSubmit={handleOtpSubmit}>
                 <CardContent>
-                  <input type="hidden" name="email" value={step.email} />
-                  <input type="hidden" name="code" value={otp} />
-
                   <div className="flex justify-center">
                     <InputOTP
                       value={otp}
                       onChange={setOtp}
                       maxLength={6}
                       disabled={isLoading}
+                      autoFocus
                     >
                       <InputOTPGroup>
                         {Array.from({ length: 6 }).map((_, index) => (
@@ -254,7 +273,11 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                     type="button"
                     variant="ghost"
                     className="w-full text-[#a6adc8] hover:text-[#f5e0dc]"
-                    onClick={() => setStep("signIn")}
+                    onClick={() => {
+                      setStep("signIn");
+                      setOtp("");
+                      setError(null);
+                    }}
                     disabled={isLoading}
                   >
                     Use a different email
