@@ -4,6 +4,18 @@ import { Resend } from "resend";
 export const emailOtp = Email({
   id: "email-otp",
 
+  // Generate a cryptographically secure 6-digit code instead of the
+  // default 32-character alphanumeric string.
+  async generateVerificationToken() {
+    const digits = new Uint8Array(6);
+    crypto.getRandomValues(digits);
+    let code = "";
+    for (const d of digits) {
+      code += (d % 10).toString();
+    }
+    return code;
+  },
+
   async sendVerificationRequest({ identifier, token }) {
     const apiKey = process.env.RESEND_API_KEY;
 
