@@ -4,302 +4,81 @@ import { ArrowRight, Loader2, Mail, Radio, UserX } from "lucide-react";
 
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@/components/ui/input-otp";
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@/components/ui/input-otp";
 
-interface AuthProps {
-  redirectAfterAuth?: string;
-}
+interface AuthProps { redirectAfterAuth?: string; }
 
-function resolveRedirectAfterAuth(
-  returnTo: string | null,
-  fallback = "/dashboard",
-) {
-  if (returnTo?.startsWith("/") && !returnTo.startsWith("//")) {
-    return returnTo;
-  }
-
-  return fallback;
+function resolveRedirectAfterAuth(returnTo: string | null, fallback = "/dashboard") {
+  return returnTo?.startsWith("/") && !returnTo.startsWith("//") ? returnTo : fallback;
 }
 
 function Auth({ redirectAfterAuth }: AuthProps = {}) {
   const { isLoading: authLoading, isAuthenticated, signIn } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-
-  const redirect = resolveRedirectAfterAuth(
-    searchParams.get("returnTo"),
-    redirectAfterAuth,
-  );
-
-  const [step, setStep] = useState<"signIn" | { email: string }>("signIn");
+  const redirect = resolveRedirectAfterAuth(searchParams.get("returnTo"), redirectAfterAuth);
+  const [step, setStep] = useState<"email" | { email: string }>("email");
+  const [email, setEmail] = useState("");
   const [otp, setOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!authLoading && isAuthenticated) {
-      navigate(redirect, { replace: true });
-    }
+    if (!authLoading && isAuthenticated) navigate(redirect, { replace: true });
   }, [authLoading, isAuthenticated, navigate, redirect]);
 
-  const handleEmailSubmit = async (
-    event: React.FormEvent<HTMLFormElement>,
-  ) => {
+  const sendCode = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    setIsLoading(true);
-    setError(null);
-
-    try {
-      const formData = new FormData(event.currentTarget);
-      const email = String(formData.get("email") ?? "").trim();
-
-      await signIn("email-otp", formData);
-      setStep({ email });
-      setOtp("");
-    } catch (errorValue) {
-      setError(
-        errorValue instanceof Error
-          ? errorValue.message
-          : "Failed to send verification code.",
-      );
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleOtpSubmit = async (
-    event: React.FormEvent<HTMLFormElement>,
-  ) => {
-    event.preventDefault();
-
-    if (otp.length !== 6) {
-      setError("Enter the complete six-digit verification code.");
-      return;
-    }
-
-    if (step === "signIn") {
-      return;
-    }
-
-    setIsLoading(true);
-    setError(null);
-
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!normalizedEmail) return setError("Enter your email address.");
+    setIsLoading(true); setError(null);
     try {
       const formData = new FormData();
-      formData.set("email", step.email);
-      formData.set("code", otp);
-
+      formData.set("email", normalizedEmail);
       await signIn("email-otp", formData);
-      navigate(redirect);
-    } catch {
-      setError(
-        "That code could not be verified. Request a new code and use the newest email.",
-      );
-      setOtp("");
-    } finally {
-      setIsLoading(false);
-    }
+      setEmail(normalizedEmail); setStep({ email: normalizedEmail }); setOtp("");
+    } catch (value) { setError(value instanceof Error ? value.message : "Failed to send verification code."); }
+    finally { setIsLoading(false); }
   };
 
-  const handleGuestLogin = async () => {
-    setIsLoading(true);
-    setError(null);
-
+  const verifyCode = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (step === "email") return;
+    const code = otp.replace(/\D/g, "");
+    if (code.length !== 6) return setError("Enter the complete six-digit verification code.");
+    setIsLoading(true); setError(null);
     try {
-      await signIn("anonymous");
-      navigate(redirect);
-    } catch (errorValue) {
-      setError(
-        `Failed to sign in: ${
-          errorValue instanceof Error ? errorValue.message : "Unknown error"
-        }`,
-      );
-    } finally {
-      setIsLoading(false);
-    }
+      const formData = new FormData();
+      formData.set("email", step.email); formData.set("code", code);
+      await signIn("email-otp", formData);
+      navigate(redirect, { replace: true });
+    } catch (value) { setError(value instanceof Error ? value.message : "That code could not be verified. Request a new code."); setOtp(""); }
+    finally { setIsLoading(false); }
+  };
+
+  const guestLogin = async () => {
+    setIsLoading(true); setError(null);
+    try { await signIn("anonymous"); navigate(redirect, { replace: true }); }
+    catch (value) { setError(value instanceof Error ? value.message : "Unable to continue as guest."); }
+    finally { setIsLoading(false); }
   };
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#11111b] px-6 py-12 text-[#cdd6f4]">
-      <div
-        aria-hidden="true"
-        className="pointer-events-none absolute -right-40 top-0 size-[32rem] rounded-full bg-[#cba6f7]/10 blur-[120px]"
-      />
-
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#08080a] px-6 py-12 text-[#e7e5e4]">
+      <div className="pointer-events-none absolute left-1/2 top-[-18rem] size-[38rem] -translate-x-1/2 rounded-full bg-[#7c3aed]/15 blur-[130px]" />
+      <div className="pointer-events-none absolute bottom-[-12rem] left-1/2 h-64 w-[38rem] -translate-x-1/2 rounded-full bg-[#ff6b2c]/10 blur-[100px]" />
       <div className="relative w-full max-w-md">
-        <button
-          type="button"
-          onClick={() => navigate("/")}
-          className="mx-auto mb-8 flex items-center gap-3"
-        >
-          <span className="flex size-10 items-center justify-center rounded-xl border border-[#cba6f7]/40 bg-[#cba6f7]/10 text-[#cba6f7]">
-            <Radio className="size-5" />
-          </span>
-
-          <span className="font-mono text-lg font-bold text-[#f5e0dc]">
-            SONAR<span className="text-[#cba6f7]">/MATCH</span>
-          </span>
-        </button>
-
-        <p className="mx-auto mb-6 text-center font-mono text-[10px] uppercase tracking-[.2em] text-[#6c7086]">
-          Private artist network · secure entry
-        </p>
-
-        <Card className="border-[#313244] bg-[#1e1e2e] shadow-2xl shadow-black/30">
-          {step === "signIn" ? (
-            <>
-              <CardHeader>
-                <CardTitle className="text-2xl text-[#f5e0dc]">
-                  Find your people.
-                </CardTitle>
-
-                <CardDescription className="text-[#a6adc8]">
-                  Sign in to discover promoters matched to your music.
-                </CardDescription>
-              </CardHeader>
-
-              <form onSubmit={handleEmailSubmit}>
-                <CardContent>
-                  <div className="flex gap-2">
-                    <div className="relative flex-1">
-                      <Mail className="absolute left-3 top-3 size-4 text-[#6c7086]" />
-
-                      <Input
-                        name="email"
-                        placeholder="you@artist.com"
-                        type="email"
-                        className="border-[#313244] bg-[#181825] pl-9 text-[#f5e0dc] placeholder:text-[#6c7086]"
-                        disabled={isLoading}
-                        required
-                      />
-                    </div>
-
-                    <Button type="submit" size="icon" disabled={isLoading}>
-                      {isLoading ? (
-                        <Loader2 className="size-4 animate-spin" />
-                      ) : (
-                        <ArrowRight className="size-4" />
-                      )}
-                    </Button>
-                  </div>
-
-                  {error && (
-                    <p className="mt-3 text-sm text-[#f38ba8]">{error}</p>
-                  )}
-
-                  <div className="my-6 flex items-center gap-3 text-xs text-[#6c7086]">
-                    <span className="h-px flex-1 bg-[#313244]" />
-                    OR
-                    <span className="h-px flex-1 bg-[#313244]" />
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full border-[#313244] bg-[#181825] text-[#a6adc8] hover:bg-[#292c3c] hover:text-[#f5e0dc]"
-                    onClick={handleGuestLogin}
-                    disabled={isLoading}
-                  >
-                    <UserX className="mr-2 size-4" />
-                    Explore as guest
-                  </Button>
-                </CardContent>
-              </form>
-            </>
-          ) : (
-            <>
-              <CardHeader>
-                <CardTitle className="text-[#f5e0dc]">
-                  Check your email
-                </CardTitle>
-
-                <CardDescription className="text-[#a6adc8]">
-                  We've sent a six-digit code to {step.email}
-                </CardDescription>
-              </CardHeader>
-
-              <form onSubmit={handleOtpSubmit}>
-                <CardContent>
-                  <div className="flex justify-center">
-                    <InputOTP
-                      value={otp}
-                      onChange={setOtp}
-                      maxLength={6}
-                      disabled={isLoading}
-                      autoFocus
-                    >
-                      <InputOTPGroup>
-                        {Array.from({ length: 6 }).map((_, index) => (
-                          <InputOTPSlot key={index} index={index} />
-                        ))}
-                      </InputOTPGroup>
-                    </InputOTP>
-                  </div>
-
-                  {error && (
-                    <p className="mt-3 text-center text-sm text-[#f38ba8]">
-                      {error}
-                    </p>
-                  )}
-
-                  <Button
-                    type="submit"
-                    className="mt-6 w-full"
-                    disabled={isLoading || otp.length !== 6}
-                  >
-                    {isLoading && (
-                      <Loader2 className="mr-2 size-4 animate-spin" />
-                    )}
-                    Verify code
-                    <ArrowRight className="ml-2 size-4" />
-                  </Button>
-                </CardContent>
-
-                <CardFooter>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    className="w-full text-[#a6adc8] hover:text-[#f5e0dc]"
-                    onClick={() => {
-                      setStep("signIn");
-                      setOtp("");
-                      setError(null);
-                    }}
-                    disabled={isLoading}
-                  >
-                    Use a different email
-                  </Button>
-                </CardFooter>
-              </form>
-            </>
-          )}
+        <button type="button" onClick={() => navigate("/")} className="mx-auto mb-9 flex items-center gap-3"><span className="flex size-10 items-center justify-center rounded-xl border border-[#ff9d5c]/40 bg-[#ff9d5c]/10 text-[#ff9d5c]"><Radio className="size-5" /></span><span className="font-mono text-lg font-bold text-white">SONAR<span className="text-[#ff9d5c]">/MATCH</span></span></button>
+        <div className="mb-4 text-center"><p className="font-mono text-[10px] uppercase tracking-[.28em] text-[#ff9d5c]">Private artist network</p><h1 className="mt-4 text-3xl font-medium tracking-[-.04em] text-white">Enter the signal.</h1><p className="mt-3 text-sm leading-6 text-white/45">Your next meaningful introduction starts here.</p></div>
+        <Card className="relative overflow-hidden border-white/[.12] bg-white/[.045] shadow-2xl shadow-black/40 backdrop-blur-xl"><div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#ff9d5c] to-transparent" />
+          {step === "email" ? <><CardHeader><CardTitle className="text-white">Find your people.</CardTitle><CardDescription className="text-white/45">Sign in to discover promoters matched to your music.</CardDescription></CardHeader><form onSubmit={sendCode}><CardContent><div className="flex gap-2"><div className="relative flex-1"><Mail className="absolute left-3 top-3 size-4 text-white/30" /><Input name="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="you@artist.com" type="email" className="border-white/[.12] bg-black/20 pl-9 text-white placeholder:text-white/25" disabled={isLoading} required /></div><Button type="submit" size="icon" disabled={isLoading}>{isLoading ? <Loader2 className="size-4 animate-spin" /> : <ArrowRight className="size-4" />}</Button></div>{error && <p className="mt-3 text-sm text-[#fb7185]">{error}</p>}<div className="my-6 flex items-center gap-3 text-[10px] font-mono tracking-widest text-white/25"><span className="h-px flex-1 bg-white/10" />OR<span className="h-px flex-1 bg-white/10" /></div><Button type="button" variant="outline" className="w-full border-white/[.12] bg-white/[.03] text-white/55 hover:bg-white/10 hover:text-white" onClick={guestLogin} disabled={isLoading}><UserX className="size-4" />Explore as guest</Button></CardContent></form></> : <><CardHeader><CardTitle className="text-white">Check your email.</CardTitle><CardDescription className="text-white/45">We&apos;ve sent a six-digit code to <span className="text-white/75">{step.email}</span></CardDescription></CardHeader><form onSubmit={verifyCode}><CardContent><div className="flex justify-center"><InputOTP value={otp} onChange={(value) => setOtp(value.replace(/\D/g, ""))} maxLength={6} disabled={isLoading} autoFocus inputMode="numeric"><InputOTPGroup>{Array.from({ length: 6 }).map((_, index) => <InputOTPSlot key={index} index={index} />)}</InputOTPGroup></InputOTP></div>{error && <p className="mt-4 text-center text-sm text-[#fb7185]">{error}</p>}<Button type="submit" className="mt-7 w-full" disabled={isLoading || otp.length !== 6}>{isLoading && <Loader2 className="size-4 animate-spin" />}Verify code<ArrowRight className="size-4" /></Button></CardContent><CardFooter className="flex-col gap-2"><Button type="button" variant="ghost" className="w-full text-white/45 hover:text-white" onClick={() => { setStep("email"); setOtp(""); setError(null); }} disabled={isLoading}>Use a different email</Button></CardFooter></form></>}
         </Card>
-
-        <p className="mt-5 text-center font-mono text-[10px] uppercase tracking-wider text-[#6c7086]">
-          Your music stays yours. Always.
-        </p>
+        <p className="mt-5 text-center font-mono text-[10px] uppercase tracking-wider text-white/25">Your music stays yours. Always.</p>
       </div>
     </main>
   );
 }
 
-export default function AuthPage(props: AuthProps) {
-  return (
-    <Suspense>
-      <Auth {...props} />
-    </Suspense>
-  );
-}
+export default function AuthPage(props: AuthProps) { return <Suspense><Auth {...props} /></Suspense>; }
