@@ -156,20 +156,20 @@ export default function Dashboard() {
       <div className="relative mx-auto max-w-7xl px-6 py-10 lg:px-10">
         <div className="mb-10 flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
           <div>
-            <p className="mb-4 flex items-center gap-2 font-mono text-[10px] uppercase tracking-[.24em] text-[#a58bff]">
-              <span className="size-1.5 rounded-full bg-[#a58bff] shadow-[0_0_12px_#a58bff]" /> Signal scan / live
+            <p className="mb-4 flex items-center gap-2 text-xs font-medium text-[#a58bff]">
+              <span className="size-1.5 rounded-full bg-[#a58bff] shadow-[0_0_12px_#a58bff]" /> Welcome back
             </p>
-            <h1 className="max-w-2xl text-4xl font-semibold tracking-[-.05em] text-white sm:text-6xl">
-              Find your <span className="bg-gradient-to-r from-[#c9b8ff] to-[#6d4dff] bg-clip-text text-transparent">amplifier.</span>
+            <h1 className="max-w-2xl text-4xl font-semibold tracking-[-.04em] text-white sm:text-5xl">
+              Find your <span className="bg-gradient-to-r from-[#c9b8ff] to-[#6d4dff] bg-clip-text text-transparent">promoter.</span>
             </h1>
-            <p className="mt-4 max-w-xl text-sm leading-6 text-white/50">
-              A living shortlist of promoters aligned with your sound, audience, and ambition.
+            <p className="mt-4 max-w-xl text-sm leading-6 text-white/60">
+              People who can promote your music — with prices up front. Like the ones you want to work with.
             </p>
           </div>
-          <div className="flex items-center gap-4 rounded-2xl border border-white/[.09] bg-white/[.04] px-5 py-4 backdrop-blur">
+          <div className="flex items-center gap-4 rounded-2xl border border-white/12 bg-white/[.07] px-5 py-4 backdrop-blur-xl">
             <div>
-              <p className="font-mono text-[10px] uppercase tracking-wider text-white/35">Profile signal</p>
-              <p className="mt-1 text-sm font-semibold text-white">Strong match potential</p>
+              <p className="text-xs text-white/55">Profile</p>
+              <p className="mt-1 text-sm font-semibold text-white">Almost complete</p>
             </div>
             <div className="relative size-12">
               <svg viewBox="0 0 36 36" className="size-full -rotate-90">
@@ -182,12 +182,12 @@ export default function Dashboard() {
         </div>
 
         <section className="mb-8 grid gap-4 md:grid-cols-[1.4fr_.8fr_.8fr]">
-          <div className="relative overflow-hidden rounded-2xl border border-white/[.09] bg-white/[.04] p-5 backdrop-blur">
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent" />
+          <div className="relative overflow-hidden rounded-2xl border border-white/12 bg-white/[.07] p-5 backdrop-blur-xl">
+            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
             <div className="flex items-start justify-between">
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-[.18em] text-white/35">Match velocity</p>
-                <p className="mt-2 text-2xl font-semibold text-white">+24.8% <span className="text-xs font-normal text-[#a6e3a1]">this week</span></p>
+                <p className="text-xs text-white/55">New matches</p>
+                <p className="mt-2 text-2xl font-semibold text-white">+24 <span className="text-xs font-normal text-[#a6e3a1]">this week</span></p>
               </div>
               <TrendingUp className="size-4 text-[#a6e3a1]" />
             </div>
@@ -207,17 +207,17 @@ export default function Dashboard() {
               <span>NOW</span>
             </div>
           </div>
-          <div className="rounded-2xl border border-white/[.09] bg-white/[.04] p-5 backdrop-blur">
+          <div className="rounded-2xl border border-white/12 bg-white/[.07] p-5 backdrop-blur-xl">
             <Users className="size-4 text-[#e3a6ff]" />
-            <p className="mt-5 font-mono text-[10px] uppercase tracking-[.18em] text-white/35">Active network</p>
+            <p className="mt-5 text-xs text-white/55">Promoters</p>
             <p className="mt-2 text-2xl font-semibold text-white">1,284</p>
-            <p className="mt-1 text-xs text-white/40">promoters indexed</p>
+            <p className="mt-1 text-xs text-white/45">to browse right now</p>
           </div>
-          <div className="rounded-2xl border border-white/[.09] bg-white/[.04] p-5 backdrop-blur">
+          <div className="rounded-2xl border border-white/12 bg-white/[.07] p-5 backdrop-blur-xl">
             <Target className="size-4 text-[#89dceb]" />
-            <p className="mt-5 font-mono text-[10px] uppercase tracking-[.18em] text-white/35">Average fit</p>
-            <p className="mt-2 text-2xl font-semibold text-white">88.2%</p>
-            <p className="mt-1 text-xs text-white/40">across your shortlist</p>
+            <p className="mt-5 text-xs text-white/55">Average match</p>
+            <p className="mt-2 text-2xl font-semibold text-white">88%</p>
+            <p className="mt-1 text-xs text-white/45">fit with your sound</p>
           </div>
         </section>
 
@@ -229,7 +229,7 @@ export default function Dashboard() {
               id="promoter-search"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search promoters, genres, cities, services..."
+              placeholder="Search promoters, genres, cities..."
               className="h-11 border-white/[.09] bg-white/[.04] pl-10 text-white placeholder:text-white/30 backdrop-blur focus-visible:ring-[#8b6cff]"
               autoComplete="off"
             />
@@ -279,8 +279,8 @@ export default function Dashboard() {
         </AnimatePresence>
 
         <div className="mb-4 flex items-center justify-between">
-          <p className="font-mono text-[10px] uppercase tracking-[.18em] text-white/35">{filtered.length} matches found</p>
-          <p className="hidden text-xs text-white/30 sm:block">Sorted by compatibility <ChevronDown className="ml-1 inline size-3" /></p>
+          <p className="text-xs text-white/55">{filtered.length} promoters</p>
+          <p className="hidden text-xs text-white/40 sm:block">Best match first <ChevronDown className="ml-1 inline size-3" /></p>
         </div>
 
         <ul className="grid gap-4 lg:grid-cols-2">
@@ -309,8 +309,8 @@ export default function Dashboard() {
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
                       <h2 className="font-semibold text-white">{promoter.name}</h2>
-                      <Badge variant="secondary" className="bg-[#a58bff]/10 font-mono text-[10px] text-[#a58bff]">
-                        {promoter.fit}% fit
+                      <Badge variant="secondary" className="bg-[#a58bff]/15 font-semibold text-[#c9b8ff]">
+                        {promoter.fit}% match
                       </Badge>
                       <button
                         type="button"
@@ -326,8 +326,8 @@ export default function Dashboard() {
                 </div>
 
                 <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-md border border-[#8b6cff]/30 bg-[#8b6cff]/10 px-2.5 py-1 font-mono text-[10px] text-[#c9b8ff]">
-                    <BadgeCheck className="size-3" /> {promoter.tag}
+                  <span className="inline-flex items-center gap-1.5 rounded-md border border-[#8b6cff]/30 bg-[#8b6cff]/12 px-2.5 py-1 text-xs font-medium text-[#c9b8ff]">
+                    <BadgeCheck className="size-3.5" /> {promoter.tag}
                   </span>
                 </div>
 
@@ -342,10 +342,10 @@ export default function Dashboard() {
                 <div className="mt-5 flex flex-col gap-3 border-t border-white/[.08] pt-4 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-baseline gap-1.5">
                     <p className="text-xl font-semibold text-white">${promoter.price}</p>
-                    <p className="font-mono text-[10px] text-white/40">/ video · min {promoter.minQty}</p>
+                    <p className="text-xs text-white/45">per video · at least {promoter.minQty}</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-[11px] text-white/35">{requested.includes(promoter.name) ? "Intro request sent" : promoter.response}</span>
+                    <span className="text-[11px] text-white/40">{requested.includes(promoter.name) ? "Intro sent" : promoter.response}</span>
                     <Button
                       size="sm"
                       variant={requested.includes(promoter.name) ? "secondary" : "default"}
@@ -355,7 +355,7 @@ export default function Dashboard() {
                       {requested.includes(promoter.name) ? (
                         <><Check className="size-3.5" /> Requested</>
                       ) : (
-                        <>Request intro <ArrowUpRight className="size-3.5" /></>
+                        <>Send intro <ArrowUpRight className="size-3.5" /></>
                       )}
                     </Button>
                   </div>
@@ -368,7 +368,7 @@ export default function Dashboard() {
         {filtered.length === 0 && (
           <div className="rounded-2xl border border-dashed border-white/[.15] bg-white/[.04] p-16 text-center backdrop-blur">
             <Sparkles className="mx-auto size-6 text-white/30" />
-            <p className="mt-4 text-sm text-white/50">No matching signals found.</p>
+            <p className="mt-4 text-sm text-white/60">No promoters match that search.</p>
             <button
               type="button"
               onClick={() => {
@@ -377,7 +377,7 @@ export default function Dashboard() {
               }}
               className="mt-3 text-xs font-semibold text-[#a58bff] hover:underline"
             >
-              Reset search
+              Clear filters
             </button>
           </div>
         )}

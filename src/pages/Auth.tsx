@@ -145,14 +145,14 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         </button>
 
         <div className="mb-4 text-center">
-          <p className="font-mono text-[10px] uppercase tracking-[.28em] text-[#a58bff]">
-            Private artist network
+          <p className="text-xs font-medium text-[#a58bff]">
+            For artists and promoters
           </p>
-          <h1 className="mt-4 text-3xl font-semibold tracking-[-.04em] text-white">
-            Enter the signal.
+          <h1 className="mt-4 text-3xl font-semibold tracking-[-.03em] text-white">
+            Sign in to sonar/match
           </h1>
-          <p className="mt-3 text-sm leading-6 text-white/45">
-            Your next meaningful introduction starts here.
+          <p className="mt-3 text-sm leading-6 text-white/55">
+            We&apos;ll email you a code. No password needed.
           </p>
         </div>
 
@@ -162,9 +162,9 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           {step === "email" ? (
             <>
               <CardHeader>
-                <CardTitle className="text-white">Find your people.</CardTitle>
-                <CardDescription className="text-white/45">
-                  Sign in to discover promoters matched to your music.
+                <CardTitle className="text-white">What&apos;s your email?</CardTitle>
+                <CardDescription className="text-white/55">
+                  Artists post tracks. Promoters list their prices. Swipe and match.
                 </CardDescription>
               </CardHeader>
 
@@ -177,7 +177,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                         name="email"
                         value={email}
                         onChange={(event) => setEmail(event.target.value)}
-                        placeholder="you@artist.com"
+                        placeholder="you@email.com"
                         type="email"
                         className="border-white/[.12] bg-black/20 pl-9 text-white placeholder:text-white/25"
                         disabled={isLoading}
@@ -195,19 +195,19 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
                   {error && <p className="mt-3 text-sm text-[#fb7185]">{error}</p>}
 
-                  <div className="my-6 flex items-center gap-3 text-[10px] font-mono tracking-widest text-white/25">
+                  <div className="my-6 flex items-center gap-3 text-xs text-white/35">
                     <span className="h-px flex-1 bg-white/10" />
-                    OR
+                    or
                     <span className="h-px flex-1 bg-white/10" />
                   </div>                    <Button
                       type="button"
                       variant="outline"
-                      className="w-full border-white/[.12] bg-white/[.03] text-white/55 hover:bg-white/10 hover:text-white"
+                      className="w-full border-white/[.14] bg-white/[.06] text-white/80 hover:bg-white/12 hover:text-white"
                       onClick={guestLogin}
                       disabled={isLoading}
                     >
                     <UserX className="size-4" />
-                    Explore as guest
+                    Look around as a guest
                   </Button>
                 </CardContent>
               </form>
@@ -215,10 +215,10 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           ) : (
             <>
               <CardHeader>
-                <CardTitle className="text-white">Check your email.</CardTitle>
-                <CardDescription className="text-white/45">
-                  We&apos;ve sent a six-digit code to{" "}
-                  <span className="text-white/75">{step.email}</span>
+                <CardTitle className="text-white">Check your email</CardTitle>
+                <CardDescription className="text-white/55">
+                  We sent a 6-digit code to{" "}
+                  <span className="text-white/85">{step.email}</span>
                 </CardDescription>
               </CardHeader>
 
@@ -278,8 +278,8 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           )}
         </Card>
 
-        <p className="mt-5 text-center font-mono text-[10px] uppercase tracking-wider text-white/25">
-          Your music stays yours. Always.
+        <p className="mt-5 text-center text-xs text-white/40">
+          Free to join. Not a label — you keep your music.
         </p>
       </div>
     </main>
