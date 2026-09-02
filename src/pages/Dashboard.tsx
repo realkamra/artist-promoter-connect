@@ -6,6 +6,7 @@ import {
   ChevronDown,
   Headphones,
   Heart,
+  Loader2,
   LogOut,
   Search,
   SlidersHorizontal,
@@ -13,7 +14,7 @@ import {
   TrendingUp,
   X,
 } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
 
 import { Badge } from "@/components/ui/badge";
@@ -97,14 +98,45 @@ const promoters = [
 
 const bars = [34, 48, 42, 66, 54, 78, 63, 86, 72, 96, 77, 88, 100, 82, 92, 74, 84, 68, 79, 62, 71, 54];
 
+// Fit is shown semantically: strong matches get the action color, weak ones quiet down.
+function fitTone(fit: number) {
+  if (fit >= 90) return "bg-[#8b6cff]/15 text-[#c9b8ff]";
+  if (fit >= 80) return "bg-white/[.08] text-white/70";
+  return "bg-white/[.05] text-white/45";
+}
+
+function SkeletonCard() {
+  return (
+    <li className="animate-pulse rounded-2xl border border-white/[.09] bg-white/[.04] p-5">
+      <div className="flex items-center gap-4">
+        <div className="size-12 rounded-xl bg-white/[.07]" />
+        <div className="flex-1 space-y-2">
+          <div className="h-3.5 w-40 rounded bg-white/[.07]" />
+          <div className="h-2.5 w-28 rounded bg-white/[.05]" />
+        </div>
+      </div>
+      <div className="mt-4 space-y-2">
+        <div className="h-2.5 w-full rounded bg-white/[.05]" />
+        <div className="h-2.5 w-4/5 rounded bg-white/[.05]" />
+      </div>
+      <div className="mt-5 flex items-center justify-between">
+        <div className="h-6 w-24 rounded bg-white/[.06]" />
+        <div className="h-8 w-28 rounded-lg bg-white/[.06]" />
+      </div>
+    </li>
+  );
+}
+
 export default function Dashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const [query, setQuery] = useState("");
   const [requested, setRequested] = useState<string[]>([]);
+  const [sending, setSending] = useState<string | null>(null);
   const [filterOpen, setFilterOpen] = useState(false);
   const [genre, setGenre] = useState("All genres");
   const [liked, setLiked] = useState<string[]>([]);
+  const [resultsLoading, setResultsLoading] = useState(false);
 
   const genres = ["All genres", "Electronic", "Indie", "Alt pop", "R&B", "Ambient"];
 
@@ -119,9 +151,25 @@ export default function Dashboard() {
     [genre, query],
   );
 
+  // Brief skeleton pass whenever the search or genre changes — the list visibly reacts.
+  useEffect(() => {
+    setResultsLoading(true);
+    const timer = window.setTimeout(() => setResultsLoading(false), 450);
+    return () => window.clearTimeout(timer);
+  }, [query, genre]);
+
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
+  };
+
+  const sendIntro = (name: string) => {
+    setSending(name);
+    // Simulated network round-trip until intros are backed by Convex.
+    window.setTimeout(() => {
+      setSending(null);
+      setRequested((current) => [...current, name]);
+    }, 900);
   };
 
   return (
@@ -217,7 +265,7 @@ export default function Dashboard() {
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder="Search promoters, genres, cities..."
-              className="h-11 border-white/[.09] bg-white/[.04] pl-10 text-white placeholder:text-white/30 backdrop-blur focus-visible:ring-[#8b6cff]"
+              className="h-11 border-white/[.09] bg-white/[.04] pl-10 text-white placeholder:text-white/30 backdrop-blur focus-visible:ring-[var(--action)]"
               autoComplete="off"
             />
           </div>
@@ -266,12 +314,20 @@ export default function Dashboard() {
         </AnimatePresence>
 
         <div className="mb-4 flex items-center justify-between">
-          <p className="text-xs text-white/55">{filtered.length} promoters</p>
+          <p className="text-xs text-white/55">
+            {resultsLoading
+              ? "Finding promoters…"
+              : filtered.length === 0
+                ? "No promoters yet"
+                : filtered.length === promoters.length
+                  ? "All promoters"
+                  : `${filtered.length} promoters`}
+          </p>
           <p className="hidden text-xs text-white/40 sm:block">Best match first <ChevronDown className="ml-1 inline size-3" /></p>
         </div>
 
         <ul className="grid gap-4 lg:grid-cols-2">
-          {filtered.map((promoter, index) => (
+          {(resultsLoading ? [] : filtered).map((promoter, index) => (
             <motion.li
               layout
               key={promoter.name}
@@ -305,7 +361,20 @@ export default function Dashboard() {
                         onClick={() => setLiked((current) => (current.includes(promoter.name) ? current.filter((n) => n !== promoter.name) : [...current, promoter.name]))}
                         className="ml-auto"
                       >
-                        <Heart className={`size-4 transition ${liked.includes(promoter.name) ? "fill-[#f5c2e7] text-[#f5c2e7]" : "text-white/30 hover:text-[#f5c2e7]"}`} />
+                        <motion.span
+                          key={liked.includes(promoter.name) ? "on" : "off"}
+                          initial={{ scale: 1 }}
+                          animate={{ scale: liked.includes(promoter.name) ? [1, 1.5, 1] : 1 }}
+                          transition={{ duration: 0.3, ease: "easeOut" }}
+                        >
+                          <Heart
+                            className={`size-4 transition ${
+                              liked.includes(promoter.name)
+                                ? "fill-[#f5c2e7] text-[#f5c2e7]"
+                                : "text-white/30 hover:text-[#f5c2e7]"
+                            }`}
+                          />
+                        </motion.span>
                       </button>
                     </div>
                     <p className="mt-1 text-[10px] text-white/35">{promoter.handle} · {promoter.location}</p>
@@ -332,17 +401,29 @@ export default function Dashboard() {
                     <p className="text-xs text-white/45">per video · at least {promoter.minQty}</p>
                   </div>
                   <div className="flex items-center gap-3">
-                    <span className="text-[11px] text-white/40">{requested.includes(promoter.name) ? "Intro sent" : promoter.response}</span>
+                    <span className="text-[11px] text-white/40">
+                      {requested.includes(promoter.name)
+                        ? "Intro sent"
+                        : promoter.response}
+                    </span>
                     <Button
                       size="sm"
                       variant={requested.includes(promoter.name) ? "secondary" : "default"}
                       disabled={requested.includes(promoter.name)}
-                      onClick={() => setRequested((current) => [...current, promoter.name])}
+                      onClick={() => sendIntro(promoter.name)}
                     >
                       {requested.includes(promoter.name) ? (
-                        <><Check className="size-3.5" /> Requested</>
+                        <>
+                          <Check className="size-3.5 text-[#a6e3a1]" /> Requested
+                        </>
+                      ) : sending === promoter.name ? (
+                        <>
+                          <Loader2 className="size-3.5 animate-spin" /> Sending…
+                        </>
                       ) : (
-                        <>Send intro <ArrowUpRight className="size-3.5" /></>
+                        <>
+                          Send intro <ArrowUpRight className="size-3.5" />
+                        </>
                       )}
                     </Button>
                   </div>
@@ -352,20 +433,33 @@ export default function Dashboard() {
           ))}
         </ul>
 
-        {filtered.length === 0 && (
+        {resultsLoading && (
+          <ul className="grid gap-4 lg:grid-cols-2">
+            <SkeletonCard />
+            <SkeletonCard />
+          </ul>
+        )}
+
+        {!resultsLoading && filtered.length === 0 && (
           <div className="rounded-2xl border border-dashed border-white/[.15] bg-white/[.04] p-16 text-center backdrop-blur">
             <Sparkles className="mx-auto size-6 text-white/30" />
-            <p className="mt-4 text-sm text-white/60">No promoters match that search.</p>
-            <button
-              type="button"
-              onClick={() => {
-                setQuery("");
-                setGenre("All genres");
-              }}
-              className="mt-3 text-xs font-semibold text-[#a58bff] hover:underline"
-            >
-              Clear filters
-            </button>
+            <p className="mt-4 text-sm font-medium text-white/70">
+              {query || genre !== "All genres"
+                ? "Nothing matches that. Try a genre or clear the filters."
+                : "New promoters are joining all the time — check back soon."}
+            </p>
+            {(query || genre !== "All genres") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setQuery("");
+                  setGenre("All genres");
+                }}
+                className="mt-4 rounded-full border border-white/15 bg-white/[.06] px-4 py-2 text-xs font-semibold text-white/80 transition hover:border-white/30 hover:bg-white/10 hover:text-white"
+              >
+                Clear filters
+              </button>
+            )}
           </div>
         )}
       </div>

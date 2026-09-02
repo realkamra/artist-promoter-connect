@@ -36,6 +36,23 @@
   --color-yellow: var(--yellow);
 }
 
+/*
+  Semantic color tokens: a token's name says what it does, not what it looks like.
+  --action      the one color reserved for "click me" (primary buttons, active states)
+  --positive    confirmation, success, live data
+  --warn        caution
+  --negative    errors, destructive
+  Gradients are allowed only inside data visualizations (charts), never as decoration.
+*/
+:root {
+  --action: #8b6cff;
+  --action-hover: #7a5cf5;
+  --action-soft: rgba(139, 108, 255, 0.15);
+  --positive: #a6e3a1;
+  --warn: #f9e2af;
+  --negative: #fb7185;
+}
+
 :root {
   --radius: 0.75rem;
   --font-display: "Fraunces", Georgia, "Times New Roman", serif;

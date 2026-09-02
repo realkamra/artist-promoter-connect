@@ -161,7 +161,8 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
               <CardHeader>
                 <CardTitle className="text-white">What&apos;s your email?</CardTitle>
                 <CardDescription className="text-white/55">
-                  Artists post tracks. Promoters list their prices. Swipe and match.
+                  Post your track, browse promoters with their prices listed, and
+                  like the ones you want to work with.
                 </CardDescription>
               </CardHeader>
 
@@ -181,7 +182,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                         required
                       />
                     </div>
-                    <Button type="submit" size="icon" disabled={isLoading} className="bg-gradient-to-r from-[#a58bff] to-[#6d4dff] text-white">
+                    <Button type="submit" size="icon" disabled={isLoading} className="bg-[#8b6cff] text-white hover:bg-[#9a80ff]">
                       {isLoading ? (
                         <Loader2 className="size-4 animate-spin" />
                       ) : (
@@ -246,7 +247,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
                   <Button
                     type="submit"
-                    className="mt-7 w-full bg-gradient-to-r from-[#a58bff] to-[#6d4dff] text-white"
+                    className="mt-7 w-full bg-[#8b6cff] text-white hover:bg-[#9a80ff]"
                     disabled={isLoading || otp.length !== 6}
                   >
                     {isLoading && <Loader2 className="size-4 animate-spin" />}

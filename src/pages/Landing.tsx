@@ -20,6 +20,12 @@ import {
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 
+/*
+  One accent, used semantically: #8b6cff marks the primary action and active
+  states. #a6e3a1 means confirmation. Nothing is colored "just because" — the
+  charts may gradient (data viz), the buttons may not (decoration).
+*/
+
 const CHART_W = 292;
 const CHART_H = 150;
 const CHART_STEPS = 14;
@@ -92,11 +98,11 @@ function Wordmark({ onClick }: { onClick?: () => void }) {
       onClick={onClick}
       className="flex items-center gap-2.5"
     >
-      <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#a58bff] to-[#6d4dff] text-white shadow-[0_0_24px_rgba(139,92,246,.5)]">
+      <span className="flex size-8 items-center justify-center rounded-lg bg-[#8b6cff] text-white shadow-[0_0_20px_rgba(139,108,255,.35)]">
         <Waves className="size-4" />
       </span>
       <span className="text-[15px] font-semibold tracking-tight text-white">
-        sonar<span className="text-[#a58bff]">/match</span>
+        sonar<span className="text-[#b59aff]">/match</span>
       </span>
     </button>
   );
@@ -173,9 +179,9 @@ function ProductPreview() {
   const dotOpacity = useTransform(progress, [0, 0.015, 1], [0, 1, 1]);
 
   const matches = [
-    ["MC", "Maya Chen", "TikTok edits", "$120 / video", "from-[#f5c2e7] to-[#e3a6ff]"],
-    ["LN", "Late Night Radio", "Playlist pushes", "$80 / slot", "from-[#89dceb] to-[#6db7ff]"],
-    ["JC", "Juno Collective", "Visualizers", "$150 / video", "from-[#a6e3a1] to-[#8fe0a0]"],
+    ["MC", "Maya Chen", "TikTok edits", "$120 / video", "#f5c2e7"],
+    ["LN", "Late Night Radio", "Playlist pushes", "$80 / slot", "#89dceb"],
+    ["JC", "Juno Collective", "Visualizers", "$150 / video", "#a6e3a1"],
   ];
 
   return (
@@ -333,7 +339,8 @@ function ProductPreview() {
                     className="flex items-center gap-2.5 rounded-lg border border-white/10 bg-white/[.05] p-2.5"
                   >
                     <span
-                      className={`flex size-7 shrink-0 items-center justify-center rounded-md bg-gradient-to-br ${g} text-[9px] font-bold text-[#0d0d16]`}
+                      className={`flex size-7 shrink-0 items-center justify-center rounded-md text-[9px] font-bold text-[#0d0d16]`}
+                      style={{ background: g }}
                     >
                       {initials}
                     </span>
@@ -371,7 +378,7 @@ function SwipeVisual() {
     <div ref={ref} className="relative mt-8 h-40 select-none">
       <div className="absolute inset-x-8 bottom-0 top-4 rounded-xl border border-white/10 bg-white/[.08] p-4 backdrop-blur-xl">
         <div className="flex items-center gap-2.5">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#89dceb] to-[#6db7ff] text-[10px] font-bold text-[#0d0d16]">
+          <span className="flex size-8 items-center justify-center rounded-lg bg-[#89dceb] text-[10px] font-bold text-[#0d0d16]">
             LN
           </span>
           <div>
@@ -384,7 +391,7 @@ function SwipeVisual() {
         </p>
       </div>
       <motion.div
-        className="absolute inset-x-6 bottom-2 top-0 rounded-xl border border-[#a58bff]/40 bg-[#15121f]/90 p-4 shadow-[0_0_40px_rgba(139,92,246,.25)] backdrop-blur-xl"
+        className="absolute inset-x-6 bottom-2 top-0 rounded-xl border border-white/15 bg-[#15121f]/90 p-4 shadow-[0_0_40px_rgba(139,108,255,.2)] backdrop-blur-xl"
         animate={
           visible
             ? { x: [0, 0, 130], rotate: [0, 0, 12], opacity: [1, 1, 0] }
@@ -408,7 +415,7 @@ function SwipeVisual() {
           Match
         </motion.span>
         <div className="flex items-center gap-2.5">
-          <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#f5c2e7] to-[#e3a6ff] text-[10px] font-bold text-[#0d0d16]">
+          <span className="flex size-8 items-center justify-center rounded-lg bg-[#f5c2e7] text-[10px] font-bold text-[#0d0d16]">
             MC
           </span>
           <div>
@@ -450,7 +457,7 @@ function PricingVisual() {
           transition={{ delay: i * 0.12, duration: 0.45 }}
           className={`flex items-center justify-between rounded-xl border px-4 py-3 ${
             highlight
-              ? "border-[#a58bff]/50 bg-[#8b6cff]/15"
+              ? "border-[#8b6cff]/45 bg-[#8b6cff]/12"
               : "border-white/10 bg-white/[.05]"
           }`}
         >
@@ -547,7 +554,6 @@ function BentoCard({
       whileHover={{ y: -5 }}
       className="group relative h-full overflow-hidden rounded-2xl border border-white/12 bg-white/[.06] p-6 backdrop-blur-xl transition-colors hover:border-white/25 hover:bg-white/[.09]"
     >
-      <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
       <div className="relative flex h-full flex-col">
         {icon}
         <h3 className="font-display mt-5 text-xl font-medium text-white">{title}</h3>
@@ -586,14 +592,12 @@ function StepCard({
 }
 
 function SideColumn({
-  accent,
   icon,
   heading,
   copy,
   items,
   cta,
 }: {
-  accent?: boolean;
   icon: ReactNode;
   heading: string;
   copy: string;
@@ -601,13 +605,7 @@ function SideColumn({
   cta?: ReactNode;
 }) {
   return (
-    <div
-      className={
-        accent
-          ? "flex h-full flex-col border-l-2 border-[#a58bff] pl-6"
-          : "flex h-full flex-col pl-0 lg:pl-6"
-      }
-    >
+    <div className="flex h-full flex-col">
       <span className="text-[#b59aff]">{icon}</span>
       <h3 className="font-display mt-4 text-2xl font-medium text-white">{heading}</h3>
       <p className="mt-2 text-sm leading-6 text-white/55">{copy}</p>
@@ -654,14 +652,15 @@ export default function Landing() {
             charge. You swipe through matches and pick the one that fits.
           </p>
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
-            <button
+            <motion.button
               type="button"
               onClick={goAuth}
-              className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#a58bff] to-[#6d4dff] px-7 py-3.5 text-sm font-semibold text-white shadow-[0_0_40px_rgba(139,92,246,.4)] transition hover:shadow-[0_0_60px_rgba(139,92,246,.6)]"
+              whileTap={{ scale: 0.97 }}
+              className="group inline-flex items-center gap-2 rounded-full bg-[#8b6cff] px-7 py-3.5 text-sm font-semibold text-white shadow-[0_0_32px_rgba(139,108,255,.35)] transition hover:bg-[#9a80ff] hover:shadow-[0_0_48px_rgba(139,108,255,.5)]"
             >
               Start matching — free
               <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
-            </button>
+            </motion.button>
             <button
               type="button"
               onClick={() => document.getElementById("how")?.scrollIntoView({ behavior: "smooth" })}
@@ -763,7 +762,6 @@ export default function Landing() {
         <div className="mt-12 grid gap-12 md:grid-cols-2 md:gap-16">
           <Reveal delay={0.05}>
             <SideColumn
-              accent
               icon={<Music className="size-5" />}
               heading="Artists & producers"
               copy="You have a track. Now find the people who can actually move it."
@@ -800,7 +798,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* One real testimonial, set editorially — no card grid */}
       <section className="relative mx-auto max-w-4xl px-6 py-16 lg:px-10">
         <Reveal>
           <blockquote className="text-center">
@@ -860,14 +857,15 @@ export default function Landing() {
             Create a free profile, post your track, and start matching tonight.
           </p>
           <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
-            <button
+            <motion.button
               type="button"
               onClick={goAuth}
-              className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#a58bff] to-[#6d4dff] px-7 py-3.5 text-sm font-semibold text-white shadow-[0_0_40px_rgba(139,92,246,.45)] transition hover:shadow-[0_0_60px_rgba(139,92,246,.65)]"
+              whileTap={{ scale: 0.97 }}
+              className="group inline-flex items-center gap-2 rounded-full bg-[#8b6cff] px-7 py-3.5 text-sm font-semibold text-white shadow-[0_0_32px_rgba(139,108,255,.35)] transition hover:bg-[#9a80ff] hover:shadow-[0_0_48px_rgba(139,108,255,.5)]"
             >
               Create your free profile
               <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
-            </button>
+            </motion.button>
             <span className="text-xs text-white/40">
               Free to join · Not a label · You keep your music
             </span>
@@ -878,7 +876,7 @@ export default function Landing() {
       <footer className="border-t border-white/10 px-6 py-8 lg:px-10">
         <div className="mx-auto flex max-w-7xl flex-col justify-between gap-3 sm:flex-row">
           <div className="flex items-center gap-2.5">
-            <span className="flex size-6 items-center justify-center rounded-md bg-gradient-to-br from-[#a58bff] to-[#6d4dff] text-white">
+            <span className="flex size-6 items-center justify-center rounded-md bg-[#8b6cff] text-white">
               <Waves className="size-3" />
             </span>
             <p className="text-xs text-white/50">
