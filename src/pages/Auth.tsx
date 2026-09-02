@@ -125,9 +125,10 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
   };
 
   return (
-    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#08080a] px-6 py-12 text-[#e7e5e4]">
-      <div className="pointer-events-none absolute left-1/2 top-[-18rem] size-[38rem] -translate-x-1/2 rounded-full bg-[#7c3aed]/15 blur-[130px]" />
-      <div className="pointer-events-none absolute bottom-[-12rem] left-1/2 h-64 w-[38rem] -translate-x-1/2 rounded-full bg-[#ff6b2c]/10 blur-[100px]" />
+    <main className="relative flex min-h-screen items-center justify-center overflow-hidden bg-[#07070e] px-6 py-12 text-[#ecebf3]">
+      <div className="pointer-events-none fixed inset-0 opacity-35 [background-image:linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)] [background-size:64px_64px]" />
+      <div className="pointer-events-none absolute left-1/2 top-[-18rem] size-[38rem] -translate-x-1/2 rounded-full bg-[#6d4dff]/20 blur-[140px]" />
+      <div className="pointer-events-none absolute bottom-[-12rem] left-1/2 h-64 w-[38rem] -translate-x-1/2 rounded-full bg-[#a58bff]/10 blur-[100px]" />
 
       <div className="relative w-full max-w-md">
         <button
@@ -135,19 +136,19 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           onClick={() => navigate("/")}
           className="mx-auto mb-9 flex items-center gap-3"
         >
-          <span className="flex size-10 items-center justify-center rounded-xl border border-[#ff9d5c]/40 bg-[#ff9d5c]/10 text-[#ff9d5c]">
+          <span className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#a58bff] to-[#6d4dff] text-white shadow-[0_0_24px_rgba(139,92,246,.5)]">
             <Radio className="size-5" />
           </span>
-          <span className="font-mono text-lg font-bold text-white">
-            SONAR<span className="text-[#ff9d5c]">/MATCH</span>
+          <span className="text-lg font-semibold tracking-tight text-white">
+            sonar<span className="text-[#a58bff]">/match</span>
           </span>
         </button>
 
         <div className="mb-4 text-center">
-          <p className="font-mono text-[10px] uppercase tracking-[.28em] text-[#ff9d5c]">
+          <p className="font-mono text-[10px] uppercase tracking-[.28em] text-[#a58bff]">
             Private artist network
           </p>
-          <h1 className="mt-4 text-3xl font-medium tracking-[-.04em] text-white">
+          <h1 className="mt-4 text-3xl font-semibold tracking-[-.04em] text-white">
             Enter the signal.
           </h1>
           <p className="mt-3 text-sm leading-6 text-white/45">
@@ -155,8 +156,8 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
           </p>
         </div>
 
-        <Card className="relative overflow-hidden border-white/[.12] bg-white/[.045] shadow-2xl shadow-black/40 backdrop-blur-xl">
-          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#ff9d5c] to-transparent" />
+        <Card className="relative overflow-hidden border-white/[.12] bg-white/[.05] shadow-2xl shadow-black/40 backdrop-blur-2xl">
+          <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#a58bff] to-transparent" />
 
           {step === "email" ? (
             <>
@@ -183,7 +184,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                         required
                       />
                     </div>
-                    <Button type="submit" size="icon" disabled={isLoading}>
+                    <Button type="submit" size="icon" disabled={isLoading} className="bg-gradient-to-r from-[#a58bff] to-[#6d4dff] text-white">
                       {isLoading ? (
                         <Loader2 className="size-4 animate-spin" />
                       ) : (
@@ -198,15 +199,13 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
                     <span className="h-px flex-1 bg-white/10" />
                     OR
                     <span className="h-px flex-1 bg-white/10" />
-                  </div>
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full border-white/[.12] bg-white/[.03] text-white/55 hover:bg-white/10 hover:text-white"
-                    onClick={guestLogin}
-                    disabled={isLoading}
-                  >
+                  </div>                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full border-white/[.12] bg-white/[.03] text-white/55 hover:bg-white/10 hover:text-white"
+                      onClick={guestLogin}
+                      disabled={isLoading}
+                    >
                     <UserX className="size-4" />
                     Explore as guest
                   </Button>
@@ -250,7 +249,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
 
                   <Button
                     type="submit"
-                    className="mt-7 w-full"
+                    className="mt-7 w-full bg-gradient-to-r from-[#a58bff] to-[#6d4dff] text-white"
                     disabled={isLoading || otp.length !== 6}
                   >
                     {isLoading && <Loader2 className="size-4 animate-spin" />}
