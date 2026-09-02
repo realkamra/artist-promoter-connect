@@ -10,9 +10,7 @@ import {
   Search,
   SlidersHorizontal,
   Sparkles,
-  Target,
   TrendingUp,
-  Users,
   X,
 } from "lucide-react";
 import { useMemo, useState } from "react";
@@ -144,7 +142,6 @@ export default function Dashboard() {
           <div className="flex items-center gap-4">
             <div className="hidden text-right sm:block">
               <p className="text-sm font-semibold text-white">{user?.name || "Artist"}</p>
-              <p className="font-mono text-[10px] uppercase tracking-wider text-white/40">Active profile</p>
             </div>
             <Button variant="ghost" size="icon" onClick={handleSignOut} aria-label="Sign out" className="text-white/50 hover:bg-white/10 hover:text-white">
               <LogOut className="size-4" />
@@ -156,11 +153,8 @@ export default function Dashboard() {
       <div className="relative mx-auto max-w-7xl px-6 py-10 lg:px-10">
         <div className="mb-10 flex flex-col justify-between gap-8 lg:flex-row lg:items-end">
           <div>
-            <p className="mb-4 flex items-center gap-2 text-xs font-medium text-[#a58bff]">
-              <span className="size-1.5 rounded-full bg-[#a58bff] shadow-[0_0_12px_#a58bff]" /> Welcome back
-            </p>
-            <h1 className="max-w-2xl text-4xl font-semibold tracking-[-.04em] text-white sm:text-5xl">
-              Find your <span className="bg-gradient-to-r from-[#c9b8ff] to-[#6d4dff] bg-clip-text text-transparent">promoter.</span>
+            <h1 className="font-display max-w-2xl text-4xl font-medium text-white sm:text-5xl">
+              Find your promoter.
             </h1>
             <p className="mt-4 max-w-xl text-sm leading-6 text-white/60">
               People who can promote your music — with prices up front. Like the ones you want to work with.
@@ -181,43 +175,36 @@ export default function Dashboard() {
           </div>
         </div>
 
-        <section className="mb-8 grid gap-4 md:grid-cols-[1.4fr_.8fr_.8fr]">
-          <div className="relative overflow-hidden rounded-2xl border border-white/12 bg-white/[.07] p-5 backdrop-blur-xl">
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
-            <div className="flex items-start justify-between">
-              <div>
+        <section className="mb-8 rounded-2xl border border-white/12 bg-white/[.07] p-5 backdrop-blur-xl">
+          <div className="grid gap-6 sm:grid-cols-[1.6fr_1fr_1fr] sm:gap-8">
+            <div>
+              <div className="flex items-start justify-between">
                 <p className="text-xs text-white/55">New matches</p>
-                <p className="mt-2 text-2xl font-semibold text-white">+24 <span className="text-xs font-normal text-[#a6e3a1]">this week</span></p>
+                <TrendingUp className="size-4 text-[#a6e3a1]" />
               </div>
-              <TrendingUp className="size-4 text-[#a6e3a1]" />
+              <p className="mt-2 text-2xl font-semibold text-white">+24 <span className="text-xs font-normal text-[#a6e3a1]">this week</span></p>
+              <div className="mt-4 flex h-16 items-end gap-1.5">
+                {bars.map((height, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ height: 0 }}
+                    animate={{ height: `${height}%` }}
+                    transition={{ delay: index * 0.025, duration: 0.45 }}
+                    className={`flex-1 rounded-t-sm ${index > 15 ? "bg-[#a58bff]" : "bg-[#a58bff]/30"}`}
+                  />
+                ))}
+              </div>
             </div>
-            <div className="mt-6 flex h-20 items-end gap-1.5">
-              {bars.map((height, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ height: 0 }}
-                  animate={{ height: `${height}%` }}
-                  transition={{ delay: index * 0.025, duration: 0.45 }}
-                  className={`flex-1 rounded-t-sm ${index > 15 ? "bg-[#a58bff]" : "bg-[#a58bff]/30"}`}
-                />
-              ))}
+            <div className="flex items-baseline justify-between gap-6 border-t border-white/[.08] pt-4 sm:block sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0">
+              <p className="text-xs text-white/55">Promoters</p>
+              <p className="mt-0 text-2xl font-semibold text-white sm:mt-3">1,284</p>
+              <p className="mt-0 text-xs text-white/45 sm:mt-1">to browse right now</p>
             </div>
-            <div className="mt-2 flex justify-between font-mono text-[9px] text-white/25">
-              <span>MON</span>
-              <span>NOW</span>
+            <div className="flex items-baseline justify-between gap-6 border-t border-white/[.08] pt-4 sm:block sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0">
+              <p className="text-xs text-white/55">Average match</p>
+              <p className="mt-0 text-2xl font-semibold text-white sm:mt-3">88%</p>
+              <p className="mt-0 text-xs text-white/45 sm:mt-1">fit with your sound</p>
             </div>
-          </div>
-          <div className="rounded-2xl border border-white/12 bg-white/[.07] p-5 backdrop-blur-xl">
-            <Users className="size-4 text-[#e3a6ff]" />
-            <p className="mt-5 text-xs text-white/55">Promoters</p>
-            <p className="mt-2 text-2xl font-semibold text-white">1,284</p>
-            <p className="mt-1 text-xs text-white/45">to browse right now</p>
-          </div>
-          <div className="rounded-2xl border border-white/12 bg-white/[.07] p-5 backdrop-blur-xl">
-            <Target className="size-4 text-[#89dceb]" />
-            <p className="mt-5 text-xs text-white/55">Average match</p>
-            <p className="mt-2 text-2xl font-semibold text-white">88%</p>
-            <p className="mt-1 text-xs text-white/45">fit with your sound</p>
           </div>
         </section>
 
@@ -253,7 +240,7 @@ export default function Dashboard() {
               className="mb-7 overflow-hidden"
             >
               <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-white/[.09] bg-white/[.04] p-4 backdrop-blur">
-                <span className="mr-2 font-mono text-[10px] uppercase tracking-wider text-white/35">Genre</span>
+                <span className="mr-2 text-[10px] uppercase tracking-wider text-white/35">Genre</span>
                 {genres.map((item) => (
                   <button
                     key={item}
@@ -295,7 +282,7 @@ export default function Dashboard() {
             >
               <article>
                 <div className="flex items-start gap-4">
-                  <div className={`flex size-12 shrink-0 items-center justify-center rounded-xl font-mono text-sm font-bold ${
+                  <div className={`flex size-12 shrink-0 items-center justify-center rounded-xl font-semibold ${
                     promoter.tone === "pink"
                       ? "bg-[#f5c2e7]/15 text-[#f5c2e7]"
                       : promoter.tone === "blue"
@@ -321,7 +308,7 @@ export default function Dashboard() {
                         <Heart className={`size-4 transition ${liked.includes(promoter.name) ? "fill-[#f5c2e7] text-[#f5c2e7]" : "text-white/30 hover:text-[#f5c2e7]"}`} />
                       </button>
                     </div>
-                    <p className="mt-1 font-mono text-[10px] text-white/35">{promoter.handle} · {promoter.location}</p>
+                    <p className="mt-1 text-[10px] text-white/35">{promoter.handle} · {promoter.location}</p>
                   </div>
                 </div>
 
@@ -334,9 +321,9 @@ export default function Dashboard() {
                 <p className="mt-4 text-sm leading-6 text-white/50">{promoter.bio}</p>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {promoter.genres.map((item) => (
-                    <span key={item} className="rounded-md bg-white/[.07] px-2.5 py-1 font-mono text-[10px] text-white/50">{item}</span>
+                    <span key={item} className="rounded-md bg-white/[.07] px-2.5 py-1 text-[10px] text-white/50">{item}</span>
                   ))}
-                  <span className="rounded-md bg-white/[.07] px-2.5 py-1 font-mono text-[10px] text-white/50">{promoter.reach}</span>
+                  <span className="rounded-md bg-white/[.07] px-2.5 py-1 text-[10px] text-white/50">{promoter.reach}</span>
                 </div>
 
                 <div className="mt-5 flex flex-col gap-3 border-t border-white/[.08] pt-4 sm:flex-row sm:items-center sm:justify-between">

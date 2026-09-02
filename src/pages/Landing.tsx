@@ -14,7 +14,6 @@ import {
   Heart,
   Music,
   Radio,
-  Sparkles,
   Waves,
   X,
 } from "lucide-react";
@@ -39,23 +38,23 @@ function makeChartSeries(): number[] {
   return pts;
 }
 
-const faq = [
-  [
-    "What is sonar/match?",
-    "A matchmaking site for music. Artists post a track, promoters list what they make and what they charge, and both sides swipe through matches.",
-  ],
-  [
-    "How does matching work?",
-    "We compare your sound with each promoter's style, audience, and past work. You get a stack of cards — swipe right on the ones you like.",
-  ],
-  [
-    "Is this a record label?",
-    "No. We never own your music or take a cut of anything. Promoters set their own prices and you pay them directly.",
-  ],
-  [
-    "What does it cost?",
-    "Browsing and matching is free for artists. Promoters keep 100% of what they charge — you agree on the price before any work starts.",
-  ],
+const faqs = [
+  {
+    q: "Is this a record label?",
+    a: "No. We never own your music, release anything, or take a cut. Promoters set their own prices and you pay them directly.",
+  },
+  {
+    q: "Who's on here?",
+    a: "Two kinds of people: artists and producers with music to push, and promoters — TikTok editors, animators, playlist curators — with pages that move records.",
+  },
+  {
+    q: "How do promoter prices work?",
+    a: "Every listing shows a price per video (or slot) and a minimum. You agree on the deal before any work starts — no 'DM for rates.'",
+  },
+  {
+    q: "What does sonar/match cost?",
+    a: "Matching is free for artists. Promoters keep everything they charge. If we ever take a fee, it'll be on the promoter side, never a cut of your music.",
+  },
 ];
 
 function Reveal({
@@ -86,20 +85,11 @@ function Reveal({
   );
 }
 
-function Pill({ children }: { children: ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-3.5 py-1.5 text-xs font-medium text-white/80 backdrop-blur">
-      {children}
-    </span>
-  );
-}
-
-function Wordmark() {
-  const navigate = useNavigate();
+function Wordmark({ onClick }: { onClick?: () => void }) {
   return (
     <button
       type="button"
-      onClick={() => navigate("/")}
+      onClick={onClick}
       className="flex items-center gap-2.5"
     >
       <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#a58bff] to-[#6d4dff] text-white shadow-[0_0_24px_rgba(139,92,246,.5)]">
@@ -112,11 +102,10 @@ function Wordmark() {
   );
 }
 
-function Nav() {
-  const navigate = useNavigate();
+function Nav({ onSignin }: { onSignin: () => void }) {
   return (
     <nav className="relative z-20 mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10">
-      <Wordmark />
+      <Wordmark onClick={onSignin} />
       <div className="hidden items-center gap-8 md:flex">
         <a href="#how" className="text-sm text-white/60 transition hover:text-white">
           How it works
@@ -130,7 +119,7 @@ function Nav() {
       </div>
       <button
         type="button"
-        onClick={() => navigate("/auth")}
+        onClick={onSignin}
         className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/10 px-5 py-2 text-sm font-medium text-white backdrop-blur transition hover:border-white/30 hover:bg-white/15"
       >
         Sign in
@@ -140,7 +129,7 @@ function Nav() {
   );
 }
 
-/* ---------------- Hero preview: projected streams, two lines ---------------- */
+/* -------- Hero preview: projected streams, re-rolled every play -------- */
 
 function ProductPreview() {
   const ref = useRef<HTMLDivElement>(null);
@@ -148,7 +137,6 @@ function ProductPreview() {
   const [series, setSeries] = useState<number[]>(makeChartSeries);
   const progress = useMotionValue(0);
 
-  // Re-roll the data and redraw every time the preview re-enters the viewport.
   useEffect(() => {
     if (!visible) {
       progress.set(0);
@@ -195,7 +183,6 @@ function ProductPreview() {
       <div className="absolute -inset-1 rounded-[2rem] bg-gradient-to-b from-[#8b5cf6]/30 via-[#6d4dff]/8 to-transparent opacity-80 blur-2xl" />
       <div
         ref={ref}
-        id="signal"
         className="relative overflow-hidden rounded-2xl border border-white/15 bg-[#0d0d16]/70 p-3 shadow-2xl shadow-black/50 backdrop-blur-2xl sm:p-4"
       >
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/25 to-transparent" />
@@ -249,7 +236,6 @@ function ProductPreview() {
                     />
                   </clipPath>
                 </defs>
-                {/* Flat "without" line — the honest baseline */}
                 <line
                   x1="0"
                   y1="128"
@@ -376,14 +362,13 @@ function ProductPreview() {
   );
 }
 
-/* ---------------- Feature visuals — each one explains the product ---------------- */
+/* -------- Feature visuals — each one explains the product -------- */
 
 function SwipeVisual() {
   const ref = useRef<HTMLDivElement>(null);
   const visible = useInView(ref, { once: false, amount: 0.4 });
   return (
     <div ref={ref} className="relative mt-8 h-40 select-none">
-      {/* Card underneath */}
       <div className="absolute inset-x-8 bottom-0 top-4 rounded-xl border border-white/10 bg-white/[.08] p-4 backdrop-blur-xl">
         <div className="flex items-center gap-2.5">
           <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#89dceb] to-[#6db7ff] text-[10px] font-bold text-[#0d0d16]">
@@ -398,7 +383,6 @@ function SwipeVisual() {
           Synthwave &amp; chill playlists. $80 per slot.
         </p>
       </div>
-      {/* Top card that swipes away */}
       <motion.div
         className="absolute inset-x-6 bottom-2 top-0 rounded-xl border border-[#a58bff]/40 bg-[#15121f]/90 p-4 shadow-[0_0_40px_rgba(139,92,246,.25)] backdrop-blur-xl"
         animate={
@@ -565,10 +549,8 @@ function BentoCard({
     >
       <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
       <div className="relative flex h-full flex-col">
-        <span className="flex size-9 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-[#b59aff]">
-          {icon}
-        </span>
-        <h3 className="mt-5 text-lg font-semibold tracking-tight text-white">{title}</h3>
+        {icon}
+        <h3 className="font-display mt-5 text-xl font-medium text-white">{title}</h3>
         <p className="mt-2 text-sm leading-6 text-white/55">{text}</p>
         {children}
       </div>
@@ -576,9 +558,82 @@ function BentoCard({
   );
 }
 
+function StepCard({
+  index,
+  title,
+  text,
+}: {
+  index: number;
+  title: string;
+  text: string;
+}) {
+  return (
+    <Reveal
+      delay={index * 0.1}
+      className={`border-t border-white/10 pt-6 lg:pt-8 ${
+        index === 0 ? "" : "lg:border-l lg:border-t-0 lg:pl-10"
+      }`}
+    >
+      <div className="grid gap-2 lg:grid-cols-[2.5rem_1fr] lg:gap-5">
+        <span className="font-display text-2xl text-[#a58bff]">{index + 1}</span>
+        <div>
+          <h3 className="font-display text-xl font-medium text-white">{title}</h3>
+          <p className="mt-2.5 max-w-md text-sm leading-6 text-white/55">{text}</p>
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
+function SideColumn({
+  accent,
+  icon,
+  heading,
+  copy,
+  items,
+  cta,
+}: {
+  accent?: boolean;
+  icon: ReactNode;
+  heading: string;
+  copy: string;
+  items: string[];
+  cta?: ReactNode;
+}) {
+  return (
+    <div
+      className={
+        accent
+          ? "flex h-full flex-col border-l-2 border-[#a58bff] pl-6"
+          : "flex h-full flex-col pl-0 lg:pl-6"
+      }
+    >
+      <span className="text-[#b59aff]">{icon}</span>
+      <h3 className="font-display mt-4 text-2xl font-medium text-white">{heading}</h3>
+      <p className="mt-2 text-sm leading-6 text-white/55">{copy}</p>
+      <ul className="mt-6 flex-1 space-y-0">
+        {items.map((item, i) => (
+          <li
+            key={item}
+            className={`flex items-start gap-3 py-2.5 text-sm text-white/70 ${
+              i > 0 ? "border-t border-white/[.07]" : ""
+            }`}
+          >
+            <Check className="mt-0.5 size-4 shrink-0 text-[#b59aff]" />
+            {item}
+          </li>
+        ))}
+      </ul>
+      {cta}
+    </div>
+  );
+}
+
 export default function Landing() {
   const navigate = useNavigate();
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+  const goAuth = () => navigate("/auth");
+
   return (
     <main className="min-h-screen overflow-hidden bg-[#07070e] text-[#ecebf3]">
       <div className="pointer-events-none fixed inset-0 opacity-35 [background-image:linear-gradient(rgba(255,255,255,.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,.02)_1px,transparent_1px)] [background-size:64px_64px]" />
@@ -586,22 +641,13 @@ export default function Landing() {
       <div className="pointer-events-none fixed right-[-8rem] top-40 h-[24rem] w-[24rem] rounded-full bg-[#8b5cf6]/14 blur-[120px]" />
       <div className="pointer-events-none fixed bottom-[-10rem] left-[-6rem] h-[24rem] w-[28rem] rounded-full bg-[#6d4dff]/12 blur-[130px]" />
 
-      <Nav />
+      <Nav onSignin={goAuth} />
 
       {/* Hero */}
       <section className="relative mx-auto max-w-7xl px-6 pb-16 pt-14 lg:px-10 lg:pt-20">
         <Reveal className="relative mx-auto max-w-3xl text-center">
-          <Pill>
-            <Music className="size-3.5 text-[#b59aff]" />
-            For artists and promoters
-          </Pill>
-          <h1 className="mt-7 text-5xl font-semibold leading-[1.06] tracking-[-.04em] text-white sm:text-6xl lg:text-7xl">
-            Get your music
-            <br />
-            promoted by{" "}
-            <span className="bg-gradient-to-r from-[#c9b8ff] via-[#a58bff] to-[#6d4dff] bg-clip-text text-transparent">
-              the right people.
-            </span>
+          <h1 className="font-display text-5xl font-medium leading-[1.05] text-white sm:text-6xl lg:text-7xl">
+            Get your music promoted by the right people.
           </h1>
           <p className="mx-auto mt-7 max-w-xl text-base leading-7 text-white/65 sm:text-lg">
             Artists post a track. Promoters list what they make and what they
@@ -610,7 +656,7 @@ export default function Landing() {
           <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
             <button
               type="button"
-              onClick={() => navigate("/auth")}
+              onClick={goAuth}
               className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#a58bff] to-[#6d4dff] px-7 py-3.5 text-sm font-semibold text-white shadow-[0_0_40px_rgba(139,92,246,.4)] transition hover:shadow-[0_0_60px_rgba(139,92,246,.6)]"
             >
               Start matching — free
@@ -628,93 +674,75 @@ export default function Landing() {
         <ProductPreview />
       </section>
 
-      {/* How it works */}
+      {/* How it works — editorial column, numbered, no cards */}
       <section id="how" className="relative mx-auto max-w-7xl px-6 py-24 lg:px-10">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <Pill>
-            <Radio className="size-3.5 text-[#b59aff]" />
-            How it works
-          </Pill>
-          <h2 className="mt-5 text-4xl font-semibold tracking-[-.03em] text-white sm:text-5xl">
-            Three steps. That&apos;s it.
-          </h2>
-        </Reveal>
-        <div className="mt-14 grid gap-4 md:grid-cols-3">
-          {[
-            {
-              number: "1",
-              title: "Post your sound",
-              text: "Paste a link to your track or write two lines about it. Takes about a minute.",
-            },
-            {
-              number: "2",
-              title: "Swipe through promoters",
-              text: "Every card shows their work, their audience size, and their price. Like or pass.",
-            },
-            {
-              number: "3",
-              title: "Agree on the deal",
-              text: "Found a fit? Agree on how many videos and for how much. Then they get to work.",
-            },
-          ].map(({ number, title, text }, index) => (
-            <Reveal key={number} delay={index * 0.1}>
-              <motion.div
-                whileHover={{ y: -5 }}
-                className="relative h-full rounded-2xl border border-white/12 bg-white/[.06] p-6 backdrop-blur-xl transition-colors hover:border-white/25 hover:bg-white/[.09]"
-              >
-                <span className="flex size-10 items-center justify-center rounded-xl bg-gradient-to-br from-[#a58bff] to-[#6d4dff] text-base font-bold text-white shadow-[0_0_24px_rgba(139,92,246,.4)]">
-                  {number}
-                </span>
-                <h3 className="mt-5 text-lg font-semibold tracking-tight text-white">{title}</h3>
-                <p className="mt-2 text-sm leading-6 text-white/55">{text}</p>
-              </motion.div>
-            </Reveal>
-          ))}
+        <div className="grid gap-10 lg:grid-cols-[1fr_2.2fr]">
+          <Reveal>
+            <p className="text-sm font-medium text-[#a58bff]">How it works</p>
+            <h2 className="font-display mt-3 text-4xl font-medium leading-[1.08] text-white sm:text-5xl">
+              Three steps. That&apos;s it.
+            </h2>
+          </Reveal>
+          <div className="divide-y divide-white/10 lg:divide-y-0">
+            <div className="grid gap-8 lg:grid-cols-3 lg:gap-0 lg:divide-x lg:divide-white/10">
+              <StepCard
+                index={0}
+                title="Post your sound"
+                text="Paste a link to your track or write two lines about it. Takes about a minute."
+              />
+              <StepCard
+                index={1}
+                title="Swipe through promoters"
+                text="Every card shows their work, their audience size, and their price. Like or pass."
+              />
+              <StepCard
+                index={2}
+                title="Agree on the deal"
+                text="Found a fit? Agree on how many videos and for how much. Then they get to work."
+              />
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Features */}
+      {/* Features — intentionally varied bento */}
       <section id="features" className="relative mx-auto max-w-7xl px-6 py-10 lg:px-10">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <Pill>
-            <Sparkles className="size-3.5 text-[#b59aff]" />
-            Features
-          </Pill>
-          <h2 className="mt-5 text-4xl font-semibold tracking-[-.03em] text-white sm:text-5xl">
+        <Reveal className="max-w-2xl">
+          <h2 className="font-display text-4xl font-medium leading-[1.08] text-white sm:text-5xl">
             Everything you need to find a fit.
           </h2>
         </Reveal>
-        <div className="mt-14 grid gap-4 md:grid-cols-2">
-          <Reveal delay={0.05}>
+        <div className="mt-14 grid gap-4 md:grid-cols-12">
+          <Reveal delay={0.05} className="md:col-span-7">
             <BentoCard
-              icon={<Heart />}
+              icon={null}
               title="Swipe to match"
               text="Like or pass, one card at a time. Every card shows what the promoter makes and how big their audience is."
             >
               <SwipeVisual />
             </BentoCard>
           </Reveal>
-          <Reveal delay={0.12}>
+          <Reveal delay={0.12} className="md:col-span-5">
             <BentoCard
-              icon={<Film />}
+              icon={<Film className="size-4" />}
               title="Prices up front"
               text="Promoters list a price per video and a minimum. No “DM for rates,” no guessing."
             >
               <PricingVisual />
             </BentoCard>
           </Reveal>
-          <Reveal delay={0.19}>
+          <Reveal delay={0.19} className="md:col-span-5">
             <BentoCard
-              icon={<Radio />}
+              icon={<Radio className="size-4" />}
               title="See why it's a fit"
               text="Each match comes with a simple breakdown, so you know why they showed up in your stack."
             >
               <FitVisual />
             </BentoCard>
           </Reveal>
-          <Reveal delay={0.26}>
+          <Reveal delay={0.26} className="md:col-span-7">
             <BentoCard
-              icon={<Music />}
+              icon={null}
               title="No label, no cut"
               text="We're a matchmaker, not a label. You and the promoter agree on terms — we stay out of it."
             >
@@ -724,133 +752,87 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Two sides */}
+      {/* Two sides — split panel, not paired cards */}
       <section className="relative mx-auto max-w-7xl px-6 py-24 lg:px-10">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <Pill>
-            <Waves className="size-3.5 text-[#b59aff]" />
-            Two sides, one marketplace
-          </Pill>
-          <h2 className="mt-5 text-4xl font-semibold tracking-[-.03em] text-white sm:text-5xl">
-            Built for both of you.
+        <Reveal>
+          <p className="text-sm font-medium text-[#a58bff]">For both of you</p>
+          <h2 className="font-display mt-3 max-w-xl text-4xl font-medium leading-[1.08] text-white sm:text-5xl">
+            Two sides. One marketplace.
           </h2>
         </Reveal>
-        <div className="mt-14 grid gap-4 md:grid-cols-2">
+        <div className="mt-12 grid gap-12 md:grid-cols-2 md:gap-16">
           <Reveal delay={0.05}>
-            <motion.div
-              whileHover={{ y: -5 }}
-              className="h-full rounded-2xl border border-[#a58bff]/35 bg-[#8b6cff]/[.09] p-7 backdrop-blur-xl transition-colors hover:border-[#a58bff]/60"
-            >
-              <span className="flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-[#a58bff] to-[#6d4dff] text-white shadow-[0_0_28px_rgba(139,92,246,.5)]">
-                <Music className="size-5" />
-              </span>
-              <h3 className="mt-5 text-xl font-semibold text-white">For artists &amp; producers</h3>
-              <ul className="mt-5 space-y-3">
-                {[
-                  "Post a track or a short description",
-                  "Swipe through promoters who fit your sound",
-                  "See price and audience size before you message",
-                  "Keep 100% of your music and your money",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2.5 text-sm text-white/70">
-                    <Check className="mt-0.5 size-4 shrink-0 text-[#b59aff]" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
+            <SideColumn
+              accent
+              icon={<Music className="size-5" />}
+              heading="Artists & producers"
+              copy="You have a track. Now find the people who can actually move it."
+              items={[
+                "Post a track or a short description",
+                "Swipe through promoters who fit your sound",
+                "See price and audience size before you message",
+                "Keep 100% of your music and your money",
+              ]}
+            />
           </Reveal>
           <Reveal delay={0.12}>
-            <motion.div
-              whileHover={{ y: -5 }}
-              className="h-full rounded-2xl border border-white/12 bg-white/[.06] p-7 backdrop-blur-xl transition-colors hover:border-white/25 hover:bg-white/[.09]"
-            >
-              <span className="flex size-11 items-center justify-center rounded-xl border border-white/15 bg-white/10 text-[#b59aff]">
-                <Film className="size-5" />
-              </span>
-              <h3 className="mt-5 text-xl font-semibold text-white">For promoters</h3>
-              <ul className="mt-5 space-y-3">
-                {[
-                  "List what you make — edits, animations, playlists",
-                  "Set your own price per video and minimum",
-                  "Get matched with tracks that fit your page",
-                  "Free to join. You keep every dollar you charge",
-                ].map((item) => (
-                  <li key={item} className="flex items-start gap-2.5 text-sm text-white/70">
-                    <Check className="mt-0.5 size-4 shrink-0 text-[#b59aff]" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
+            <SideColumn
+              icon={<Film className="size-5" />}
+              heading="Promoters"
+              copy="You have a page that moves records. Get paid for the work you already do."
+              items={[
+                "List what you make — edits, animations, playlists",
+                "Set your own price per video and minimum",
+                "Get matched with tracks that fit your page",
+                "Free to join. You keep every dollar you charge",
+              ]}
+              cta={
+                <button
+                  type="button"
+                  onClick={goAuth}
+                  className="mt-7 inline-flex items-center gap-1.5 text-sm font-medium text-[#b59aff] transition hover:text-white"
+                >
+                  List your services <ArrowUpRight className="size-4" />
+                </button>
+              }
+            />
           </Reveal>
         </div>
       </section>
 
-      {/* Testimonials */}
-      <section className="relative mx-auto max-w-7xl px-6 py-10 lg:px-10">
-        <Reveal className="mx-auto max-w-2xl text-center">
-          <Pill>
-            <Heart className="size-3.5 text-[#b59aff]" />
-            What people say
-          </Pill>
-          <h2 className="mt-5 text-4xl font-semibold tracking-[-.03em] text-white sm:text-5xl">
-            Better matches feel different.
-          </h2>
+      {/* One real testimonial, set editorially — no card grid */}
+      <section className="relative mx-auto max-w-4xl px-6 py-16 lg:px-10">
+        <Reveal>
+          <blockquote className="text-center">
+            <p className="font-display text-2xl font-medium leading-snug text-white sm:text-4xl">
+              &ldquo;I used to DM fifty pages and hear back from two. Now I see
+              prices first and pick.&rdquo;
+            </p>
+            <footer className="mt-6 text-sm text-white/50">
+              Kairo M. — independent artist
+            </footer>
+          </blockquote>
         </Reveal>
-        <div className="mt-12 grid gap-4 md:grid-cols-3">
-          {[
-            ["Finally, a shortlist that feels like someone actually listened to the track.", "Nia S.", "Producer, alt R&B"],
-            ["I used to DM fifty pages and hear back from two. Now I see prices first and pick.", "Kairo M.", "Independent artist"],
-            ["As a promoter, the matches actually fit my page. Less scrolling, better work.", "Ari V.", "TikTok editor"],
-          ].map(([quote, name, role], index) => (
-            <Reveal key={name} delay={index * 0.1}>
-              <motion.div
-                whileHover={{ y: -5 }}
-                className={`h-full rounded-2xl border p-6 backdrop-blur-xl transition-colors ${
-                  index === 1
-                    ? "border-[#a58bff]/40 bg-[#8b6cff]/[.1] hover:border-[#a58bff]/65"
-                    : "border-white/12 bg-white/[.06] hover:border-white/25 hover:bg-white/[.09]"
-                }`}
-              >
-                <p className="text-base leading-7 text-white/80">&ldquo;{quote}&rdquo;</p>
-                <div className="mt-8 border-t border-white/10 pt-4">
-                  <p className="text-sm font-semibold text-white">{name}</p>
-                  <p className="mt-1 text-xs text-white/45">{role}</p>
-                </div>
-              </motion.div>
-            </Reveal>
-          ))}
-        </div>
       </section>
 
-      {/* FAQ */}
-      <section id="faq" className="mx-auto max-w-3xl px-6 py-20 lg:px-10">
-        <Reveal className="text-center">
-          <Pill>
-            <ChevronDown className="size-3.5 text-[#b59aff]" />
-            Questions
-          </Pill>
-          <h2 className="mt-5 text-4xl font-semibold tracking-[-.03em] text-white">
+      {/* FAQ — plain editorial list */}
+      <section id="faq" className="mx-auto max-w-3xl px-6 py-16 lg:px-10">
+        <Reveal>
+          <h2 className="font-display text-4xl font-medium text-white">
             Straight answers.
           </h2>
         </Reveal>
-        <div className="mt-10 space-y-2">
-          {faq.map(([question, answer], index) => (
-            <Reveal key={question} delay={index * 0.04}>
-              <div
-                className={`overflow-hidden rounded-2xl border backdrop-blur-xl transition-colors ${
-                  openFaq === index
-                    ? "border-[#a58bff]/50 bg-[#8b6cff]/[.1]"
-                    : "border-white/12 bg-white/[.05] hover:border-white/25"
-                }`}
-              >
+        <div className="mt-10">
+          {faqs.map((item, index) => (
+            <Reveal key={item.q} delay={index * 0.04}>
+              <div className="border-b border-white/10">
                 <button
                   type="button"
                   onClick={() => setOpenFaq(openFaq === index ? null : index)}
-                  className="flex w-full items-center justify-between px-5 py-4 text-left text-sm font-medium text-white"
+                  aria-expanded={openFaq === index}
+                  className="flex w-full items-center justify-between gap-6 py-5 text-left text-[15px] font-medium text-white transition hover:text-[#c9b8ff]"
                 >
-                  <span>{question}</span>
+                  <span>{item.q}</span>
                   <ChevronDown
                     className={`size-4 shrink-0 text-white/50 transition-transform duration-300 ${
                       openFaq === index ? "rotate-180 text-[#b59aff]" : ""
@@ -858,7 +840,9 @@ export default function Landing() {
                   />
                 </button>
                 {openFaq === index && (
-                  <p className="px-5 pb-5 text-sm leading-6 text-white/60">{answer}</p>
+                  <p className="max-w-xl pb-5 text-sm leading-6 text-white/60">
+                    {item.a}
+                  </p>
                 )}
               </div>
             </Reveal>
@@ -866,28 +850,27 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="mx-auto max-w-7xl px-6 pb-24 pt-10 lg:px-10">
-        <Reveal>
-          <div className="relative overflow-hidden rounded-3xl border border-[#a58bff]/30 bg-[#0c0c16]/80 px-7 py-16 text-center shadow-[0_0_80px_rgba(139,92,246,.18)] backdrop-blur-xl">
-            <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-[#a58bff] to-transparent" />
-            <div className="absolute left-1/2 top-0 size-80 -translate-x-1/2 rounded-full bg-[#6d4dff]/20 blur-[100px]" />
-            <div className="relative">
-              <h2 className="mx-auto max-w-2xl text-4xl font-semibold tracking-[-.03em] text-white sm:text-5xl">
-                Your next promoter is one swipe away.
-              </h2>
-              <p className="mx-auto mt-4 max-w-lg text-sm leading-6 text-white/60">
-                Create a free profile, post your track, and start matching tonight.
-              </p>
-              <button
-                type="button"
-                onClick={() => navigate("/auth")}
-                className="group mt-8 inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#a58bff] to-[#6d4dff] px-7 py-3.5 text-sm font-semibold text-white shadow-[0_0_40px_rgba(139,92,246,.45)] transition hover:shadow-[0_0_60px_rgba(139,92,246,.65)]"
-              >
-                Create your free profile
-                <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
-              </button>
-            </div>
+      {/* Closing CTA — typographic, not a gradient strip */}
+      <section className="relative mx-auto max-w-7xl px-6 pb-24 pt-16 lg:px-10">
+        <Reveal className="text-center">
+          <h2 className="font-display mx-auto max-w-2xl text-4xl font-medium leading-[1.08] text-white sm:text-5xl lg:text-6xl">
+            Your next promoter is one swipe away.
+          </h2>
+          <p className="mx-auto mt-5 max-w-md text-sm leading-6 text-white/60">
+            Create a free profile, post your track, and start matching tonight.
+          </p>
+          <div className="mt-9 flex flex-wrap items-center justify-center gap-4">
+            <button
+              type="button"
+              onClick={goAuth}
+              className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#a58bff] to-[#6d4dff] px-7 py-3.5 text-sm font-semibold text-white shadow-[0_0_40px_rgba(139,92,246,.45)] transition hover:shadow-[0_0_60px_rgba(139,92,246,.65)]"
+            >
+              Create your free profile
+              <ArrowRight className="size-4 transition group-hover:translate-x-0.5" />
+            </button>
+            <span className="text-xs text-white/40">
+              Free to join · Not a label · You keep your music
+            </span>
           </div>
         </Reveal>
       </section>

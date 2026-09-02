@@ -145,10 +145,7 @@ function Auth({ redirectAfterAuth }: AuthProps = {}) {
         </button>
 
         <div className="mb-4 text-center">
-          <p className="text-xs font-medium text-[#a58bff]">
-            For artists and promoters
-          </p>
-          <h1 className="mt-4 text-3xl font-semibold tracking-[-.03em] text-white">
+          <h1 className="font-display text-3xl font-medium text-white">
             Sign in to sonar/match
           </h1>
           <p className="mt-3 text-sm leading-6 text-white/55">
