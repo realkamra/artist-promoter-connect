@@ -1,4 +1,10 @@
-import { motion, useInView } from "framer-motion";
+import {
+  animate,
+  motion,
+  useInView,
+  useMotionValue,
+  useTransform,
+} from "framer-motion";
 import {
   Activity,
   ArrowRight,
@@ -16,11 +22,26 @@ import {
   Waves,
   Zap,
 } from "lucide-react";
-import { useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { useNavigate } from "react-router";
 
-const chartPoints =
-  "0 132 22 120 44 126 66 108 88 114 110 92 132 98 154 74 176 82 198 60 220 66 242 42 264 48 292 24";
+const CHART_W = 292;
+const CHART_H = 150;
+const CHART_STEPS = 14;
+
+// A fresh, wobbly climb every time it plays — never the same line twice.
+function makeChartSeries(): number[] {
+  const pts: number[] = [];
+  for (let i = 0; i < CHART_STEPS; i++) {
+    const t = i / (CHART_STEPS - 1);
+    const climb = -84 * Math.pow(t, 1.12);
+    const wobble = (Math.random() - 0.5) * 24 * (0.3 + t);
+    const pullback = Math.random() < 0.24 ? 9 + Math.random() * 13 : 0;
+    pts.push(Math.min(138, Math.max(12, 118 + climb + wobble + pullback)));
+  }
+  pts[0] = Math.min(134, Math.max(16, 116 + (Math.random() - 0.5) * 12));
+  return pts;
+}
 
 const faq = [
   [
@@ -126,6 +147,45 @@ function Nav() {
 function ProductPreview() {
   const ref = useRef<HTMLDivElement>(null);
   const visible = useInView(ref, { once: false, amount: 0.25 });
+  const [series, setSeries] = useState<number[]>(makeChartSeries);
+  const progress = useMotionValue(0);
+
+  // Re-roll the data and redraw every time the preview re-enters the viewport.
+  useEffect(() => {
+    if (!visible) {
+      progress.set(0);
+      return;
+    }
+    setSeries(makeChartSeries());
+    const controls = animate(progress, 1, {
+      duration: 1.9,
+      ease: [0.22, 1, 0.36, 1],
+    });
+    return () => controls.stop();
+  }, [visible, progress]);
+
+  const chartPoints = series
+    .map(
+      (y, i) =>
+        `${((i * CHART_W) / (CHART_STEPS - 1)).toFixed(1)} ${y.toFixed(1)}`,
+    )
+    .join(" ");
+  const areaPath = `M0 ${series[0].toFixed(1)} ${series
+    .slice(1)
+    .map(
+      (y, i) =>
+        `L${(((i + 1) * CHART_W) / (CHART_STEPS - 1)).toFixed(1)} ${y.toFixed(1)}`,
+    )
+    .join(" ")} L${CHART_W} ${CHART_H} L0 ${CHART_H} Z`;
+  const dotX = useTransform(progress, (p) => p * CHART_W);
+  const dotY = useTransform(progress, (p) => {
+    const x = p * (CHART_STEPS - 1);
+    const i = Math.min(CHART_STEPS - 2, Math.floor(x));
+    const f = x - i;
+    return series[i] + (series[i + 1] - series[i]) * f;
+  });
+  const dotOpacity = useTransform(progress, [0, 0.015, 1], [0, 1, 1]);
+
   const navItems = [
     ["Overline", Activity, true],
     ["Dashboard", Headphones, false],
@@ -207,7 +267,7 @@ function ProductPreview() {
               </div>
               <div className="relative mt-6 h-44">
                 <svg
-                  viewBox="0 0 292 150"
+                  viewBox={`0 0 ${CHART_W} ${CHART_H}`}
                   preserveAspectRatio="none"
                   className="absolute inset-0 size-full overflow-visible"
                 >
@@ -220,23 +280,62 @@ function ProductPreview() {
                       <stop stopColor="#6d4dff" />
                       <stop offset="1" stopColor="#b59aff" />
                     </linearGradient>
+                    <clipPath id="landingReveal">
+                      <motion.rect
+                        x="0"
+                        y={-24}
+                        width={CHART_W + 8}
+                        height={CHART_H + 48}
+                        style={{ scaleX: progress, originX: 0, originY: 0 }}
+                      />
+                    </clipPath>
                   </defs>
-                  <path
-                    d="M0 132 L22 120 L44 126 L66 108 L88 114 L110 92 L132 98 L154 74 L176 82 L198 60 L220 66 L242 42 L264 48 L292 24 L292 150 L0 150 Z"
-                    fill="url(#landingArea)"
-                    opacity={visible ? 1 : 0}
-                  />
-                  <motion.polyline
-                    points={chartPoints}
-                    fill="none"
-                    stroke="url(#landingLine)"
-                    strokeWidth="2.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={visible ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 }}
-                    transition={{ duration: 1.5, ease: "easeOut" }}
-                  />
+                  <g clipPath="url(#landingReveal)">
+                    <path d={areaPath} fill="url(#landingArea)" />
+                    <polyline
+                      points={chartPoints}
+                      fill="none"
+                      stroke="url(#landingLine)"
+                      strokeWidth="2.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </g>
+                  <motion.g style={{ x: dotX, y: dotY, opacity: dotOpacity }}>
+                    <motion.circle
+                      r="13"
+                      fill="#8b6cff"
+                      initial={{ opacity: 0 }}
+                      animate={
+                        visible
+                          ? { opacity: [0.35, 0], scale: [1, 2.1] }
+                          : { opacity: 0 }
+                      }
+                      transition={{
+                        duration: 1.7,
+                        repeat: Infinity,
+                        ease: "easeOut",
+                        delay: 0.9,
+                      }}
+                    />
+                    <circle r="4.5" fill="#b59aff" stroke="#0d0d16" strokeWidth="1.5" />
+                    <circle r="1.8" fill="#fff" />
+                    <g transform="translate(0,-17)">
+                      <path d="M0 -22 l4 6 h-8 z" fill="#b59aff" />
+                      <rect x="-15" y="-14" width="30" height="13" rx="6.5" fill="#8b6cff" />
+                      <text
+                        x="0"
+                        y="-4.5"
+                        textAnchor="middle"
+                        fontSize="6.5"
+                        fill="#fff"
+                        fontFamily="ui-monospace, SFMono-Regular, monospace"
+                        letterSpacing="1.5"
+                      >
+                        NOW
+                      </text>
+                    </g>
+                  </motion.g>
                 </svg>
                 <div className="absolute inset-x-0 bottom-0 border-b border-white/[.08]" />
                 <div className="absolute inset-x-0 top-1/2 border-b border-dashed border-white/[.06]" />
