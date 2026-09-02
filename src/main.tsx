@@ -3,7 +3,9 @@ import { createRoot } from "react-dom/client";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router";
 import { ConvexAuthProvider } from "@convex-dev/auth/react";
 import { ConvexReactClient } from "convex/react";
+import { Headphones } from "lucide-react";
 import { RequireAuth } from "@/components/RequireAuth";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Toaster } from "@/components/ui/sonner";
 import "./index.css";
 import "./types/global.d.ts";
@@ -18,8 +20,11 @@ const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
 function RouteLoading() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-[#11111b] text-[#cdd6f4]">
-      <p className="animate-pulse font-mono text-sm text-[#a6adc8]">Loading sonar/match...</p>
+    <main className="flex min-h-screen flex-col items-center justify-center gap-4 bg-[#07070e] text-[#ecebf3]">
+      <span className="flex size-10 animate-pulse items-center justify-center rounded-xl bg-[#8b6cff]/20 text-[#c9b8ff]">
+        <Headphones className="size-5" />
+      </span>
+      <p className="text-sm text-white/50">Loading…</p>
     </main>
   );
 }
@@ -65,18 +70,20 @@ function App() {
   return (
     <ConvexAuthProvider client={convex}>
       <BrowserRouter basename="/artist-promoter-connect">
-        <RouteSyncer />
-        <Suspense fallback={<RouteLoading />}>
-          <Routes>
-            <Route path="/" element={<Landing />} />
-            <Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
-            <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
-            <Route path="/create-listing" element={<RequireAuth><CreateListing /></RequireAuth>} />
-            <Route path="/promoter/:handle" element={<PromoterProfile />} />
-            <Route path="/demo" element={<RequireAuth><StatefulButtonDemo /></RequireAuth>} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </Suspense>
+        <ErrorBoundary>
+          <RouteSyncer />
+          <Suspense fallback={<RouteLoading />}>
+            <Routes>
+              <Route path="/" element={<Landing />} />
+              <Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
+              <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+              <Route path="/create-listing" element={<RequireAuth><CreateListing /></RequireAuth>} />
+              <Route path="/promoter/:handle" element={<PromoterProfile />} />
+              <Route path="/demo" element={<RequireAuth><StatefulButtonDemo /></RequireAuth>} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Suspense>
+        </ErrorBoundary>
       </BrowserRouter>
     </ConvexAuthProvider>
   );

@@ -91,10 +91,12 @@ export default function Dashboard() {
     if (!listings) return [];
     const text = query.trim().toLowerCase();
     return listings.filter((listing) => {
-      const haystack = `${listing.name} ${listing.location} ${listing.services.join(" ")} ${listing.genres.join(" ")} ${listing.headline}`
+      const services = Array.isArray(listing.services) ? listing.services : [];
+      const genres = Array.isArray(listing.genres) ? listing.genres : [];
+      const haystack = `${listing.name} ${listing.location ?? ""} ${services.join(" ")} ${genres.join(" ")} ${listing.headline ?? ""}`
         .toLowerCase();
       if (text && !haystack.includes(text)) return false;
-      return genre === "All genres" || listing.genres.includes(genre);
+      return genre === "All genres" || genres.includes(genre);
     });
   }, [listings, query, genre]);
 
@@ -113,7 +115,10 @@ export default function Dashboard() {
     }, 900);
   };
 
-  const totalFollowers = (listings ?? []).reduce((sum, l) => sum + l.followers, 0);
+  const totalFollowers = (listings ?? []).reduce(
+    (sum, l) => sum + (typeof l.followers === "number" ? l.followers : 0),
+    0,
+  );
 
   const isLoading = listings === undefined;
 
@@ -311,7 +316,7 @@ export default function Dashboard() {
                 <article>
                   <div className="flex items-start gap-4">
                     <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-[#8b6cff]/15 font-bold text-[#c9b8ff]">
-                      {initialsOf(listing.name)}
+                      {initialsOf(listing.name || "?")}
                     </div>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-2">

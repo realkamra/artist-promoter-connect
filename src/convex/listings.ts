@@ -89,7 +89,17 @@ export const getMyListing = query({
 export const listListings = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("listings").collect();
+    // Defensive reads: a doc written before a schema change (or by hand in the
+    // dashboard) can be missing fields the UI assumes. Skip instead of crashing.
+    const docs = await ctx.db.query("listings").collect();
+    return docs.filter(
+      (doc) =>
+        typeof doc.handle === "string" &&
+        typeof doc.name === "string" &&
+        Array.isArray(doc.services) &&
+        Array.isArray(doc.genres) &&
+        typeof doc.pricePerUnit === "number",
+    );
   },
 });
 
