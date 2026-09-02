@@ -11,7 +11,9 @@
 import type * as auth from "../auth.js";
 import type * as auth_emailOtp from "../auth/emailOtp.js";
 import type * as http from "../http.js";
+import type * as listings from "../listings.js";
 import type * as users from "../users.js";
+import type * as vouches from "../vouches.js";
 
 import type {
   ApiFromModules,
@@ -23,7 +25,9 @@ declare const fullApi: ApiFromModules<{
   auth: typeof auth;
   "auth/emailOtp": typeof auth_emailOtp;
   http: typeof http;
+  listings: typeof listings;
   users: typeof users;
+  vouches: typeof vouches;
 }>;
 
 /**

@@ -787,7 +787,7 @@ export default function Landing() {
               cta={
                 <button
                   type="button"
-                  onClick={goAuth}
+                  onClick={() => navigate("/create-listing")}
                   className="mt-7 inline-flex items-center gap-1.5 text-sm font-medium text-[#b59aff] transition hover:text-white"
                 >
                   List your services <ArrowUpRight className="size-4" />

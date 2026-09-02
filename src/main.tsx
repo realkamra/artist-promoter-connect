@@ -11,6 +11,8 @@ import "./types/global.d.ts";
 const Landing = lazy(() => import("./pages/Landing.tsx"));
 const AuthPage = lazy(() => import("./pages/Auth.tsx"));
 const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
+const CreateListing = lazy(() => import("./pages/CreateListing.tsx"));
+const PromoterProfile = lazy(() => import("./pages/PromoterProfile.tsx"));
 const StatefulButtonDemo = lazy(() => import("./components/StatefulButtonDemo.tsx"));
 const NotFound = lazy(() => import("./pages/NotFound.tsx"));
 
@@ -69,6 +71,8 @@ function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/auth" element={<AuthPage redirectAfterAuth="/dashboard" />} />
             <Route path="/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
+            <Route path="/create-listing" element={<RequireAuth><CreateListing /></RequireAuth>} />
+            <Route path="/promoter/:handle" element={<PromoterProfile />} />
             <Route path="/demo" element={<RequireAuth><StatefulButtonDemo /></RequireAuth>} />
             <Route path="*" element={<NotFound />} />
           </Routes>

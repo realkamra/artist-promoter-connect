@@ -11,94 +11,27 @@ import {
   Search,
   SlidersHorizontal,
   Sparkles,
+  Star,
   TrendingUp,
+  Users,
   X,
 } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router";
+import { toast } from "sonner";
 
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { FloatingDock, createArtistDockItems } from "@/components/FloatingDock";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
+import { formatFollowers, formatRating, initialsOf } from "@/lib/format";
+import { api } from "@/convex/_generated/api";
+import { useMutation, useQuery } from "convex/react";
 
-const promoters = [
-  {
-    name: "Maya Chen",
-    handle: "@mayamixes",
-    location: "Berlin, DE",
-    genres: ["Electronic", "House"],
-    reach: "180k monthly",
-    bio: "Playlist curator and campaign strategist for forward-thinking electronic artists.",
-    fit: 96,
-    tone: "pink",
-    response: "Usually replies in 4h",
-    price: 250,
-    minQty: 3,
-    tag: "Playlist & promotion",
-  },
-  {
-    name: "Late Night Radio",
-    handle: "@latenightradio",
-    location: "Worldwide",
-    genres: ["Indie", "Alt pop"],
-    reach: "92k monthly",
-    bio: "Independent radio and discovery channel finding the next late-night obsession.",
-    fit: 91,
-    tone: "blue",
-    response: "Usually replies in 1d",
-    price: 180,
-    minQty: 2,
-    tag: "Radio & discovery",
-  },
-  {
-    name: "Juno Collective",
-    handle: "@junocollective",
-    location: "Toronto, CA",
-    genres: ["Alt pop", "R&B"],
-    reach: "64k monthly",
-    bio: "A small, trusted network of tastemakers, writers, and playlist editors.",
-    fit: 88,
-    tone: "yellow",
-    response: "Usually replies in 8h",
-    price: 320,
-    minQty: 4,
-    tag: "Tastemakers & editors",
-  },
-  {
-    name: "Soft Signal",
-    handle: "@softsignal.fm",
-    location: "London, UK",
-    genres: ["Ambient", "Electronic"],
-    reach: "41k monthly",
-    bio: "Curated releases and intimate listening sessions for boundary-pushing sounds.",
-    fit: 84,
-    tone: "green",
-    response: "Usually replies in 2d",
-    price: 140,
-    minQty: 5,
-    tag: "Curated sessions",
-  },
-  {
-    name: "Velvet Cuts",
-    handle: "@velvetcuts",
-    location: "Los Angeles, US",
-    genres: ["R&B", "Soul"],
-    reach: "110k monthly",
-    bio: "High-energy TikTok edits and animated visuals built to make your record impossible to scroll past.",
-    fit: 82,
-    tone: "pink",
-    response: "Usually replies in 6h",
-    price: 275,
-    minQty: 2,
-    tag: "TikTok edits & animation",
-  },
-];
-
+const GENRES = ["All genres", "Alt", "R&B", "Indie", "Alt pop", "Hyperpop", "Electronic", "Soul"];
 const bars = [34, 48, 42, 66, 54, 78, 63, 86, 72, 96, 77, 88, 100, 82, 92, 74, 84, 68, 79, 62, 71, 54];
 
-// Fit is shown semantically: strong matches get the action color, weak ones quiet down.
 function fitTone(fit: number) {
   if (fit >= 90) return "bg-[#8b6cff]/15 text-[#c9b8ff]";
   if (fit >= 80) return "bg-white/[.08] text-white/70";
@@ -130,6 +63,11 @@ function SkeletonCard() {
 export default function Dashboard() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
+
+  const listings = useQuery(api.listings.listListings, {});
+  const seedDemo = useMutation(api.listings.seedDemoListings);
+  const myListing = useQuery(api.listings.getMyListing, {});
+
   const [query, setQuery] = useState("");
   const [requested, setRequested] = useState<string[]>([]);
   const [sending, setSending] = useState<string | null>(null);
@@ -138,18 +76,9 @@ export default function Dashboard() {
   const [liked, setLiked] = useState<string[]>([]);
   const [resultsLoading, setResultsLoading] = useState(false);
 
-  const genres = ["All genres", "Electronic", "Indie", "Alt pop", "R&B", "Ambient"];
-
-  const filtered = useMemo(
-    () =>
-      promoters.filter((promoter) => {
-        const matchesQuery = `${promoter.name} ${promoter.location} ${promoter.genres.join(" ")} ${promoter.tag}`
-          .toLowerCase()
-          .includes(query.toLowerCase());
-        return matchesQuery && (genre === "All genres" || promoter.genres.includes(genre));
-      }),
-    [genre, query],
-  );
+  useEffect(() => {
+    void seedDemo({});
+  }, [seedDemo]);
 
   // Brief skeleton pass whenever the search or genre changes — the list visibly reacts.
   useEffect(() => {
@@ -158,6 +87,17 @@ export default function Dashboard() {
     return () => window.clearTimeout(timer);
   }, [query, genre]);
 
+  const filtered = useMemo(() => {
+    if (!listings) return [];
+    const text = query.trim().toLowerCase();
+    return listings.filter((listing) => {
+      const haystack = `${listing.name} ${listing.location} ${listing.services.join(" ")} ${listing.genres.join(" ")} ${listing.headline}`
+        .toLowerCase();
+      if (text && !haystack.includes(text)) return false;
+      return genre === "All genres" || listing.genres.includes(genre);
+    });
+  }, [listings, query, genre]);
+
   const handleSignOut = async () => {
     await signOut();
     navigate("/");
@@ -165,12 +105,17 @@ export default function Dashboard() {
 
   const sendIntro = (name: string) => {
     setSending(name);
-    // Simulated network round-trip until intros are backed by Convex.
+    // Simulated round-trip until intros are backed by Convex.
     window.setTimeout(() => {
       setSending(null);
       setRequested((current) => [...current, name]);
+      toast.success(`Intro sent to ${name}.`);
     }, 900);
   };
+
+  const totalFollowers = (listings ?? []).reduce((sum, l) => sum + l.followers, 0);
+
+  const isLoading = listings === undefined;
 
   return (
     <main className="min-h-screen bg-[#07070e] pb-28 text-[#ecebf3]">
@@ -180,11 +125,11 @@ export default function Dashboard() {
       <header className="relative border-b border-white/[.07] bg-[#07070e]/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5 lg:px-10">
           <button type="button" onClick={() => navigate("/")} className="group flex items-center gap-2.5">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-gradient-to-br from-[#a58bff] to-[#6d4dff] text-white shadow-[0_0_20px_rgba(139,92,246,.45)] transition group-hover:shadow-[0_0_30px_rgba(139,92,246,.6)]">
+            <span className="flex size-8 items-center justify-center rounded-lg bg-[#8b6cff] text-white shadow-[0_0_20px_rgba(139,108,255,.35)] transition group-hover:shadow-[0_0_30px_rgba(139,108,255,.5)]">
               <Headphones className="size-4" />
             </span>
             <span className="text-[15px] font-semibold tracking-tight text-white">
-              sonar<span className="text-[#a58bff]">/match</span>
+              sonar<span className="text-[#b59aff]">/match</span>
             </span>
           </button>
           <div className="flex items-center gap-4">
@@ -208,19 +153,32 @@ export default function Dashboard() {
               People who can promote your music — with prices up front. Like the ones you want to work with.
             </p>
           </div>
-          <div className="flex items-center gap-4 rounded-2xl border border-white/12 bg-white/[.07] px-5 py-4 backdrop-blur-xl">
-            <div>
-              <p className="text-xs text-white/55">Profile</p>
-              <p className="mt-1 text-sm font-semibold text-white">Almost complete</p>
-            </div>
-            <div className="relative size-12">
-              <svg viewBox="0 0 36 36" className="size-full -rotate-90">
-                <circle cx="18" cy="18" r="15" fill="none" stroke="white" strokeOpacity=".1" strokeWidth="3" />
-                <circle cx="18" cy="18" r="15" fill="none" stroke="#a58bff" strokeWidth="3" strokeDasharray="75 100" strokeLinecap="round" />
-              </svg>
-              <span className="absolute inset-0 flex items-center justify-center font-mono text-[10px] text-[#c9b8ff]">80%</span>
-            </div>
-          </div>
+          {myListing ? (
+            <button
+              type="button"
+              onClick={() => navigate(`/promoter/${myListing.handle}`)}
+              className="flex items-center gap-4 rounded-2xl border border-[#8b6cff]/30 bg-[#8b6cff]/[.08] px-5 py-4 text-left backdrop-blur-xl transition hover:border-[#8b6cff]/60"
+            >
+              <div>
+                <p className="text-xs text-white/55">Your listing is live</p>
+                <p className="mt-1 text-sm font-semibold text-white">
+                  sonar/match/promoter/{myListing.handle}
+                </p>
+              </div>
+              <ArrowUpRight className="size-4 text-[#c9b8ff]" />
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => navigate("/create-listing")}
+              className="flex items-center gap-4 rounded-2xl border border-white/12 bg-white/[.07] px-5 py-4 text-left backdrop-blur-xl transition hover:border-[#8b6cff]/50"
+            >
+              <div>
+                <p className="text-xs text-white/55">Promote other artists?</p>
+                <p className="mt-1 text-sm font-semibold text-white">Create your listing →</p>
+              </div>
+            </button>
+          )}
         </div>
 
         <section className="mb-8 rounded-2xl border border-white/12 bg-white/[.07] p-5 backdrop-blur-xl">
@@ -230,7 +188,10 @@ export default function Dashboard() {
                 <p className="text-xs text-white/55">New matches</p>
                 <TrendingUp className="size-4 text-[#a6e3a1]" />
               </div>
-              <p className="mt-2 text-2xl font-semibold text-white">+24 <span className="text-xs font-normal text-[#a6e3a1]">this week</span></p>
+              <p className="mt-2 text-2xl font-semibold text-white">
+                {isLoading ? "—" : `+${Math.max(3, Math.round((listings?.length ?? 0) / 2))}`}{" "}
+                <span className="text-xs font-normal text-[#a6e3a1]">this week</span>
+              </p>
               <div className="mt-4 flex h-16 items-end gap-1.5">
                 {bars.map((height, index) => (
                   <motion.div
@@ -238,20 +199,24 @@ export default function Dashboard() {
                     initial={{ height: 0 }}
                     animate={{ height: `${height}%` }}
                     transition={{ delay: index * 0.025, duration: 0.45 }}
-                    className={`flex-1 rounded-t-sm ${index > 15 ? "bg-[#a58bff]" : "bg-[#a58bff]/30"}`}
+                    className={`flex-1 rounded-t-sm ${index > 15 ? "bg-[#8b6cff]" : "bg-[#8b6cff]/30"}`}
                   />
                 ))}
               </div>
             </div>
             <div className="flex items-baseline justify-between gap-6 border-t border-white/[.08] pt-4 sm:block sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0">
               <p className="text-xs text-white/55">Promoters</p>
-              <p className="mt-0 text-2xl font-semibold text-white sm:mt-3">1,284</p>
-              <p className="mt-0 text-xs text-white/45 sm:mt-1">to browse right now</p>
+              <p className="mt-0 text-2xl font-semibold text-white sm:mt-3">
+                {isLoading ? "—" : (listings?.length ?? 0)}
+              </p>
+              <p className="mt-0 text-xs text-white/45 sm:mt-1">live listings right now</p>
             </div>
             <div className="flex items-baseline justify-between gap-6 border-t border-white/[.08] pt-4 sm:block sm:border-l sm:border-t-0 sm:pl-8 sm:pt-0">
-              <p className="text-xs text-white/55">Average match</p>
-              <p className="mt-0 text-2xl font-semibold text-white sm:mt-3">88%</p>
-              <p className="mt-0 text-xs text-white/45 sm:mt-1">fit with your sound</p>
+              <p className="text-xs text-white/55">Combined reach</p>
+              <p className="mt-0 text-2xl font-semibold text-white sm:mt-3">
+                {isLoading ? "—" : `${formatFollowers(totalFollowers)}`}
+              </p>
+              <p className="mt-0 text-xs text-white/45 sm:mt-1">followers across every listing</p>
             </div>
           </div>
         </section>
@@ -275,7 +240,7 @@ export default function Dashboard() {
             aria-expanded={filterOpen}
             className="h-11 gap-2 border-white/[.09] bg-white/[.04] text-white/60 backdrop-blur hover:bg-white/10 hover:text-white"
           >
-            <SlidersHorizontal className="size-4" /> Filters {genre !== "All genres" && <span className="size-1.5 rounded-full bg-[#a58bff]" />}
+            <SlidersHorizontal className="size-4" /> Filters {genre !== "All genres" && <span className="size-1.5 rounded-full bg-[#8b6cff]" />}
           </Button>
         </div>
 
@@ -289,14 +254,14 @@ export default function Dashboard() {
             >
               <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-white/[.09] bg-white/[.04] p-4 backdrop-blur">
                 <span className="mr-2 text-[10px] uppercase tracking-wider text-white/35">Genre</span>
-                {genres.map((item) => (
+                {GENRES.map((item) => (
                   <button
                     key={item}
                     type="button"
                     onClick={() => setGenre(item)}
                     className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${
                       genre === item
-                        ? "bg-gradient-to-r from-[#a58bff] to-[#6d4dff] text-white"
+                        ? "bg-[#8b6cff] text-white"
                         : "bg-white/[.07] text-white/50 hover:text-white"
                     }`}
                   >
@@ -315,11 +280,11 @@ export default function Dashboard() {
 
         <div className="mb-4 flex items-center justify-between">
           <p className="text-xs text-white/55">
-            {resultsLoading
-              ? "Finding promoters…"
+            {isLoading
+              ? "Loading listings…"
               : filtered.length === 0
                 ? "No promoters yet"
-                : filtered.length === promoters.length
+                : filtered.length === (listings?.length ?? 0)
                   ? "All promoters"
                   : `${filtered.length} promoters`}
           </p>
@@ -327,120 +292,125 @@ export default function Dashboard() {
         </div>
 
         <ul className="grid gap-4 lg:grid-cols-2">
-          {(resultsLoading ? [] : filtered).map((promoter, index) => (
-            <motion.li
-              layout
-              key={promoter.name}
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.06 }}
-              className="group rounded-2xl border border-white/[.09] bg-white/[.04] p-5 backdrop-blur transition hover:-translate-y-0.5 hover:border-[#8b6cff]/40 hover:bg-white/[.06]"
-            >
-              <article>
-                <div className="flex items-start gap-4">
-                  <div className={`flex size-12 shrink-0 items-center justify-center rounded-xl font-semibold ${
-                    promoter.tone === "pink"
-                      ? "bg-[#f5c2e7]/15 text-[#f5c2e7]"
-                      : promoter.tone === "blue"
-                        ? "bg-[#89dceb]/15 text-[#89dceb]"
-                        : promoter.tone === "yellow"
-                          ? "bg-[#f9e2af]/15 text-[#f9e2af]"
-                          : "bg-[#a6e3a1]/15 text-[#a6e3a1]"
-                  }`}>
-                    {promoter.name.split(" ").map((part) => part[0]).join("")}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <h2 className="font-semibold text-white">{promoter.name}</h2>
-                      <Badge variant="secondary" className="bg-[#a58bff]/15 font-semibold text-[#c9b8ff]">
-                        {promoter.fit}% match
-                      </Badge>
-                      <button
-                        type="button"
-                        aria-label="Like promoter"
-                        onClick={() => setLiked((current) => (current.includes(promoter.name) ? current.filter((n) => n !== promoter.name) : [...current, promoter.name]))}
-                        className="ml-auto"
-                      >
-                        <motion.span
-                          key={liked.includes(promoter.name) ? "on" : "off"}
-                          initial={{ scale: 1 }}
-                          animate={{ scale: liked.includes(promoter.name) ? [1, 1.5, 1] : 1 }}
-                          transition={{ duration: 0.3, ease: "easeOut" }}
-                        >
-                          <Heart
-                            className={`size-4 transition ${
-                              liked.includes(promoter.name)
-                                ? "fill-[#f5c2e7] text-[#f5c2e7]"
-                                : "text-white/30 hover:text-[#f5c2e7]"
-                            }`}
-                          />
-                        </motion.span>
-                      </button>
+          {isLoading && (
+            <>
+              <SkeletonCard />
+              <SkeletonCard />
+            </>
+          )}
+          {!isLoading &&
+            filtered.map((listing, index) => (
+              <motion.li
+                layout
+                key={listing._id}
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: index * 0.06 }}
+                className="group rounded-2xl border border-white/[.09] bg-white/[.04] p-5 backdrop-blur transition hover:-translate-y-0.5 hover:border-[#8b6cff]/40 hover:bg-white/[.06]"
+              >
+                <article>
+                  <div className="flex items-start gap-4">
+                    <div className="flex size-12 shrink-0 items-center justify-center rounded-xl bg-[#8b6cff]/15 font-bold text-[#c9b8ff]">
+                      {initialsOf(listing.name)}
                     </div>
-                    <p className="mt-1 text-[10px] text-white/35">{promoter.handle} · {promoter.location}</p>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h2 className="font-semibold text-white">{listing.name}</h2>
+                        <Badge variant="secondary" className={fitTone(fitFor(listing))}>
+                          {fitFor(listing)}% fit
+                        </Badge>
+                        <button
+                          type="button"
+                          aria-label="Like promoter"
+                          onClick={() => setLiked((current) => (current.includes(listing.name) ? current.filter((n) => n !== listing.name) : [...current, listing.name]))}
+                          className="ml-auto"
+                        >
+                          <motion.span
+                            key={liked.includes(listing.name) ? "on" : "off"}
+                            initial={{ scale: 1 }}
+                            animate={{ scale: liked.includes(listing.name) ? [1, 1.5, 1] : 1 }}
+                            transition={{ duration: 0.3, ease: "easeOut" }}
+                          >
+                            <Heart
+                              className={`size-4 transition ${
+                                liked.includes(listing.name)
+                                  ? "fill-[#f5c2e7] text-[#f5c2e7]"
+                                  : "text-white/30 hover:text-[#f5c2e7]"
+                              }`}
+                            />
+                          </motion.span>
+                        </button>
+                      </div>
+                      <p className="mt-1 text-[10px] text-white/35">{listing.location}</p>
+                    </div>
                   </div>
-                </div>
 
-                <div className="mt-4 flex flex-wrap items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 rounded-md border border-[#8b6cff]/30 bg-[#8b6cff]/12 px-2.5 py-1 text-xs font-medium text-[#c9b8ff]">
-                    <BadgeCheck className="size-3.5" /> {promoter.tag}
-                  </span>
-                </div>
+                  <p className="mt-4 text-sm leading-6 text-white/55">{listing.headline}</p>
 
-                <p className="mt-4 text-sm leading-6 text-white/50">{promoter.bio}</p>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {promoter.genres.map((item) => (
-                    <span key={item} className="rounded-md bg-white/[.07] px-2.5 py-1 text-[10px] text-white/50">{item}</span>
-                  ))}
-                  <span className="rounded-md bg-white/[.07] px-2.5 py-1 text-[10px] text-white/50">{promoter.reach}</span>
-                </div>
-
-                <div className="mt-5 flex flex-col gap-3 border-t border-white/[.08] pt-4 sm:flex-row sm:items-center sm:justify-between">
-                  <div className="flex items-baseline gap-1.5">
-                    <p className="text-xl font-semibold text-white">${promoter.price}</p>
-                    <p className="text-xs text-white/45">per video · at least {promoter.minQty}</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className="text-[11px] text-white/40">
-                      {requested.includes(promoter.name)
-                        ? "Intro sent"
-                        : promoter.response}
+                  <div className="mt-4 flex flex-wrap items-center gap-2">
+                    <span className="inline-flex items-center gap-1.5 rounded-md border border-[#8b6cff]/30 bg-[#8b6cff]/12 px-2.5 py-1 text-xs font-medium text-[#c9b8ff]">
+                      <BadgeCheck className="size-3.5" /> {listing.services[0] ?? "Promoter"}
                     </span>
-                    <Button
-                      size="sm"
-                      variant={requested.includes(promoter.name) ? "secondary" : "default"}
-                      disabled={requested.includes(promoter.name)}
-                      onClick={() => sendIntro(promoter.name)}
-                    >
-                      {requested.includes(promoter.name) ? (
-                        <>
-                          <Check className="size-3.5 text-[#a6e3a1]" /> Requested
-                        </>
-                      ) : sending === promoter.name ? (
-                        <>
-                          <Loader2 className="size-3.5 animate-spin" /> Sending…
-                        </>
-                      ) : (
-                        <>
-                          Send intro <ArrowUpRight className="size-3.5" />
-                        </>
-                      )}
-                    </Button>
+                    {listing.services.slice(1, 3).map((service) => (
+                      <span key={service} className="rounded-md bg-white/[.07] px-2.5 py-1 text-[10px] text-white/50">
+                        {service}
+                      </span>
+                    ))}
                   </div>
-                </div>
-              </article>
-            </motion.li>
-          ))}
+
+                  <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-white/45">
+                    <span className="inline-flex items-center gap-1.5">
+                      <Users className="size-3.5" /> {formatFollowers(listing.followers)}
+                    </span>
+                    <span className="inline-flex items-center gap-1.5">
+                      <Star className="size-3.5 fill-[#f9e2af] text-[#f9e2af]" />
+                      {formatRating(listing.ratingSum, listing.vouchCount)}
+                      <span className="text-white/25">({listing.vouchCount})</span>
+                    </span>
+                  </div>
+
+                  <div className="mt-5 flex flex-col gap-3 border-t border-white/[.08] pt-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex items-baseline gap-1.5">
+                      <p className="text-xl font-semibold text-white">${listing.pricePerUnit}</p>
+                      <p className="text-xs text-white/45">/ {listing.unit} · min {listing.minQuantity}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => navigate(`/promoter/${listing.handle}`)}
+                        className="text-white/55 hover:bg-white/10 hover:text-white"
+                      >
+                        View profile
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant={requested.includes(listing.name) ? "secondary" : "default"}
+                        disabled={requested.includes(listing.name)}
+                        onClick={() => sendIntro(listing.name)}
+                      >
+                        {requested.includes(listing.name) ? (
+                          <>
+                            <Check className="size-3.5 text-[#a6e3a1]" /> Requested
+                          </>
+                        ) : sending === listing.name ? (
+                          <>
+                            <Loader2 className="size-3.5 animate-spin" /> Sending…
+                          </>
+                        ) : (
+                          <>
+                            Send intro <ArrowUpRight className="size-3.5" />
+                          </>
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                </article>
+              </motion.li>
+            ))}
         </ul>
 
-        {resultsLoading && (
-          <ul className="grid gap-4 lg:grid-cols-2">
-            <SkeletonCard />
-            <SkeletonCard />
-          </ul>
-        )}
-
-        {!resultsLoading && filtered.length === 0 && (
+        {!isLoading && filtered.length === 0 && (
           <div className="rounded-2xl border border-dashed border-white/[.15] bg-white/[.04] p-16 text-center backdrop-blur">
             <Sparkles className="mx-auto size-6 text-white/30" />
             <p className="mt-4 text-sm font-medium text-white/70">
@@ -463,7 +433,15 @@ export default function Dashboard() {
           </div>
         )}
       </div>
-      <FloatingDock items={createArtistDockItems({ onSignOut: handleSignOut })} />
+      <FloatingDock items={createArtistDockItems({ onSignOut: handleSignOut, onCreateListing: () => navigate("/create-listing") })} />
     </main>
   );
+}
+
+// A deterministic placeholder "fit" derived from the listing itself until real
+// matching logic exists. Same listing always gets the same number.
+function fitFor(listing: { followers: number; name: string }): number {
+  let hash = 0;
+  for (const char of listing.name) hash = (hash * 31 + char.charCodeAt(0)) % 997;
+  return Math.min(98, 72 + ((hash + (listing.followers % 50)) % 27));
 }

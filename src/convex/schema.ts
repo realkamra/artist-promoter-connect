@@ -32,6 +32,36 @@ const schema = defineSchema(
       role: v.optional(roleValidator), // role of the user. do not remove
     }).index("email", ["email"]), // index for the email. do not remove or modify
 
+    // A promoter's public listing: what they do, what they charge, and proof they're good.
+    listings: defineTable({
+      promoterId: v.id("users"),
+      handle: v.string(),
+      name: v.string(),
+      headline: v.string(),
+      about: v.string(),
+      services: v.array(v.string()),
+      genres: v.array(v.string()),
+      pricePerUnit: v.number(),
+      unit: v.string(),
+      minQuantity: v.number(),
+      followers: v.number(),
+      location: v.string(),
+      portfolio: v.array(v.object({ label: v.string(), url: v.string() })),
+      socials: v.array(v.object({ platform: v.string(), url: v.string() })),
+      vouchCount: v.number(),
+      ratingSum: v.number(),
+    })
+      .index("by_promoter", ["promoterId"])
+      .index("by_handle", ["handle"]),
+
+    // Vouches: 1-5 star ratings + a short comment. One per user per listing.
+    vouches: defineTable({
+      listingId: v.id("listings"),
+      authorId: v.id("users"),
+      rating: v.number(),
+      comment: v.string(),
+    }).index("by_listing", ["listingId"]),
+
     // add other tables here
 
     // tableName: defineTable({

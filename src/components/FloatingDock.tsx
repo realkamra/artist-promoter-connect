@@ -1,10 +1,8 @@
 import {
-  IconAdjustments,
   IconHome,
   IconLayoutNavbarCollapse,
   IconMusic,
   IconSend,
-  IconUser,
 } from "@tabler/icons-react";
 import {
   AnimatePresence,
@@ -39,14 +37,25 @@ export function FloatingDock({ items, desktopClassName, mobileClassName }: Float
   );
 }
 
-export function createArtistDockItems({ onSignOut }: { onSignOut?: () => void } = {}): FloatingDockItem[] {
+export function createArtistDockItems({
+  onSignOut,
+  onCreateListing,
+}: {
+  onSignOut?: () => void;
+  onCreateListing?: () => void;
+} = {}): FloatingDockItem[] {
   return [
     { title: "Home", icon: <IconHome className="size-full" />, href: "/" },
     { title: "Matches", icon: <IconMusic className="size-full" />, href: "#matches" },
-    { title: "Requests", icon: <IconSend className="size-full" />, href: "#requests" },
-    { title: "Profile", icon: <IconUser className="size-full" />, href: "#profile" },
-    { title: "Preferences", icon: <IconAdjustments className="size-full" />, href: "#preferences" },
-    ...(onSignOut ? [{ title: "Sign out", icon: <IconLayoutNavbarCollapse className="size-full" />, href: "/", onClick: onSignOut }] : []),
+    {
+      title: "My listing",
+      icon: <IconSend className="size-full" />,
+      href: "/create-listing",
+      onClick: onCreateListing,
+    },
+    ...(onSignOut
+      ? [{ title: "Sign out", icon: <IconLayoutNavbarCollapse className="size-full" />, href: "/", onClick: onSignOut }]
+      : []),
   ];
 }
 
