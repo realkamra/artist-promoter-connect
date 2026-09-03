@@ -5,6 +5,53 @@ import { mutation, query } from "./_generated/server";
 
 const handleRegex = /^[a-z0-9-]{3,32}$/;
 
+// Fills in defaults for any field an older or hand-edited doc may be missing, so
+// the UI never crashes on malformed data.
+function normalizeListing(doc: {
+  _id: Id<"listings">;
+  _creationTime: number;
+  handle: string;
+  name: string;
+  headline?: string;
+  about?: string;
+  services?: unknown;
+  genres?: unknown;
+  pricePerUnit?: number;
+  unit?: string;
+  minQuantity?: number;
+  followers?: number;
+  location?: string;
+  portfolio?: unknown;
+  socials?: unknown;
+  vouchCount?: number;
+  ratingSum?: number;
+}) {
+  return {
+    ...doc,
+    headline: typeof doc.headline === "string" ? doc.headline : "",
+    about: typeof doc.about === "string" ? doc.about : "",
+    services: Array.isArray(doc.services) ? (doc.services as string[]).filter((s) => typeof s === "string") : [],
+    genres: Array.isArray(doc.genres) ? (doc.genres as string[]).filter((g) => typeof g === "string") : [],
+    pricePerUnit: typeof doc.pricePerUnit === "number" ? doc.pricePerUnit : 0,
+    unit: typeof doc.unit === "string" && doc.unit ? doc.unit : "video",
+    minQuantity: typeof doc.minQuantity === "number" ? doc.minQuantity : 1,
+    followers: typeof doc.followers === "number" ? doc.followers : 0,
+    location: typeof doc.location === "string" ? doc.location : "",
+    portfolio: Array.isArray(doc.portfolio)
+      ? (doc.portfolio as Array<{ label?: unknown; url?: unknown }>)
+          .filter((p) => p && typeof p.url === "string")
+          .map((p) => ({ label: typeof p.label === "string" ? p.label : "", url: p.url as string }))
+      : [],
+    socials: Array.isArray(doc.socials)
+      ? (doc.socials as Array<{ platform?: unknown; url?: unknown }>)
+          .filter((s) => s && typeof s.url === "string")
+          .map((s) => ({ platform: typeof s.platform === "string" ? s.platform : "Link", url: s.url as string }))
+      : [],
+    vouchCount: typeof doc.vouchCount === "number" ? doc.vouchCount : 0,
+    ratingSum: typeof doc.ratingSum === "number" ? doc.ratingSum : 0,
+  };
+}
+
 const listingFields = {
   handle: v.string(),
   name: v.string(),
@@ -80,10 +127,11 @@ export const getMyListing = query({
   handler: async (ctx) => {
     const userId = await getAuthUserId(ctx);
     if (userId === null) return null;
-    return await ctx.db
+    const doc = await ctx.db
       .query("listings")
       .withIndex("by_promoter", (q) => q.eq("promoterId", userId))
       .first();
+    return doc ? normalizeListing(doc) : null;
   },
 });
 
@@ -93,14 +141,13 @@ export const listListings = query({
     // Defensive reads: a doc written before a schema change (or by hand in the
     // dashboard) can be missing fields the UI assumes. Skip instead of crashing.
     const docs = await ctx.db.query("listings").collect();
-    return docs.filter(
-      (doc) =>
-        typeof doc.handle === "string" &&
-        typeof doc.name === "string" &&
-        Array.isArray(doc.services) &&
-        Array.isArray(doc.genres) &&
-        typeof doc.pricePerUnit === "number",
-    );
+    return docs
+      .filter(
+        (doc) =>
+          typeof doc.handle === "string" &&
+          typeof doc.name === "string",
+      )
+      .map((doc) => normalizeListing(doc));
   },
 });
 
@@ -112,6 +159,7 @@ export const getListingByHandle = query({
       .withIndex("by_handle", (q) => q.eq("handle", handle))
       .first();
     if (!listing) return null;
+    const normalized = normalizeListing(listing);
     const promoter = await ctx.db.get(listing.promoterId);
     const vouchDocs = await ctx.db
       .query("vouches")
@@ -119,7 +167,7 @@ export const getListingByHandle = query({
       .collect();
     const authors = await Promise.all(vouchDocs.map((v) => ctx.db.get(v.authorId)));
     return {
-      listing,
+      listing: normalized,
       promoterName: promoter?.name ?? listing.name,
       vouches: vouchDocs
         .map((vouch, i) => ({

@@ -63,10 +63,14 @@ function RouteSyncer() {
 
 function App() {
   const convexUrl = import.meta.env.VITE_CONVEX_URL as string | undefined;
-  if (!convexUrl) {
+  // Hooks must run unconditionally — never after an early return.
+  const convex = useMemo(
+    () => (convexUrl ? new ConvexReactClient(convexUrl) : null),
+    [convexUrl],
+  );
+  if (!convex || !convexUrl) {
     return <SetupError title="sonar/match is not configured" message={MISSING_URL} />;
   }
-  const convex = useMemo(() => new ConvexReactClient(convexUrl), [convexUrl]);
   return (
     <ConvexAuthProvider client={convex}>
       <BrowserRouter basename="/artist-promoter-connect">

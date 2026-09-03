@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { api } from "@/convex/_generated/api";
-import type { Doc } from "@/convex/_generated/dataModel";
+import type { Doc, Id } from "@/convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
 
 const MAX_MESSAGE = 500;
@@ -37,7 +37,7 @@ export function RequestDialog({
   const tracks = useQuery(api.tracks.listMyTracks, open ? {} : "skip");
   const createRequest = useMutation(api.requests.createRequest);
 
-  const [trackId, setTrackId] = useState<string | null>(null);
+  const [trackId, setTrackId] = useState<Id<"tracks"> | null>(null);
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
 
