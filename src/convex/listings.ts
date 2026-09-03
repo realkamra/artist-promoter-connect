@@ -1,5 +1,6 @@
 import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
+import type { Id } from "./_generated/dataModel";
 import { mutation, query } from "./_generated/server";
 
 const handleRegex = /^[a-z0-9-]{3,32}$/;
@@ -206,16 +207,76 @@ export const seedDemoListings = mutation({
       },
     ];
 
+    const createdListingIds: Id<"listings">[] = [];
     for (const entry of demo) {
       const demoUserId = await ctx.db.insert("users", {
         name: entry.name,
         isAnonymous: true,
       });
-      await ctx.db.insert("listings", {
+      const listingId = await ctx.db.insert("listings", {
         promoterId: demoUserId,
         ...entry,
         vouchCount: 0,
         ratingSum: 0,
+      });
+      createdListingIds.push(listingId);
+    }
+
+    // Demo vouches from invisible demo users, so profiles aren't dead on day one.
+    const demoVouches: Array<{ listing: number; rating: number; author: string; comment: string }> = [
+      { listing: 0, rating: 5, author: "Kairo M.", comment: "Maya's edit hit 300k in a week. Fast, communicative, and the comments were full of people asking about the song." },
+      { listing: 0, rating: 4, author: "Sena P.", comment: "Great edits, clear about revisions. Worth the price." },
+      { listing: 1, rating: 5, author: "Dario V.", comment: "Got a real placement, not a bot playlist. Shared the stats after." },
+      { listing: 2, rating: 5, author: "Nia O.", comment: "The visualizer carried the whole single rollout. Booked them again." },
+    ];
+    for (const vouch of demoVouches) {
+      const listingId = createdListingIds[vouch.listing];
+      const listing = await ctx.db.get(listingId);
+      if (!listing) continue;
+      const authorId = await ctx.db.insert("users", {
+        name: vouch.author,
+        isAnonymous: true,
+      });
+      await ctx.db.insert("vouches", {
+        listingId,
+        authorId,
+        rating: vouch.rating,
+        comment: vouch.comment,
+      });
+      await ctx.db.patch(listingId, {
+        vouchCount: listing.vouchCount + 1,
+        ratingSum: listing.ratingSum + vouch.rating,
+      });
+    }
+
+    // A couple of demo tracks so promoters who sign in see a live feed.
+    const demoTracks = [
+      {
+        artist: "Kairo M.",
+        title: "static bloom — demo mix",
+        link: "https://soundcloud.com/",
+        description: "Alt R&B demo, mixed at home. Looking for TikTok edits that fit the moodier side of the genre.",
+        genres: ["Alt", "R&B"],
+      },
+      {
+        artist: "Sena P.",
+        title: "Neon Teeth (snippet)",
+        link: "https://www.youtube.com/",
+        description: "Hyperpop snippet, 40k on SoundCloud so far. Want animated visualizers for the full release.",
+        genres: ["Hyperpop", "Electronic"],
+      },
+    ];
+    for (const track of demoTracks) {
+      const artistId = await ctx.db.insert("users", {
+        name: track.artist,
+        isAnonymous: true,
+      });
+      await ctx.db.insert("tracks", {
+        artistId,
+        title: track.title,
+        link: track.link,
+        description: track.description,
+        genres: track.genres,
       });
     }
   },

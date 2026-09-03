@@ -62,6 +62,43 @@ const schema = defineSchema(
       comment: v.string(),
     }).index("by_listing", ["listingId"]),
 
+    // An artist's track post: a link (Spotify/SoundCloud/YouTube/Drive) plus a
+    // short pitch. This is what promoters browse.
+    tracks: defineTable({
+      artistId: v.id("users"),
+      title: v.string(),
+      link: v.string(),
+      description: v.string(),
+      genres: v.array(v.string()),
+    })
+      .index("by_artist", ["artistId"]),
+
+    // A real intro: artist -> promoter. Artist picks a track, writes a short
+    // message, and specifies what they want. Promoter sees it and responds.
+    requests: defineTable({
+      artistId: v.id("users"),
+      promoterId: v.id("users"),
+      listingId: v.id("listings"),
+      trackId: v.optional(v.id("tracks")),
+      message: v.string(),
+      status: v.union(
+        v.literal("pending"),
+        v.literal("accepted"),
+        v.literal("declined"),
+      ),
+    })
+      .index("by_artist", ["artistId"])
+      .index("by_promoter", ["promoterId"])
+      .index("by_listing", ["listingId"]),
+
+    // Saved promoters (the heart). One row per user per listing.
+    saves: defineTable({
+      userId: v.id("users"),
+      listingId: v.id("listings"),
+    })
+      .index("by_user_listing", ["userId", "listingId"])
+      .index("by_user", ["userId"]),
+
     // add other tables here
 
     // tableName: defineTable({
