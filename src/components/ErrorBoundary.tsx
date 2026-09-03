@@ -13,6 +13,17 @@ interface ErrorBoundaryState {
 
 function diagnose(error: Error): string | null {
   const message = `${error.message}`;
+  // Convex client errors look like "[CONVEX Q(listings:listListings)] Server Error".
+  const fnMatch = message.match(/CONVEX [QA]\(([a-zA-Z0-9:_.-]+)\)/);
+  if (fnMatch) {
+    const fn = fnMatch[1];
+    return (
+      `The page is asking for the backend function "${fn}", but the Convex deployment ` +
+      "this site talks to doesn't have it (or is rejecting the call). Fix: in your " +
+      "Codespace run `npx convex dev --once` to deploy the backend, then confirm the " +
+      "GitHub secret VITE_CONVEX_URL points at the SAME deployment that command prints."
+    );
+  }
   if (/could not find (public )?function|no function|function not found/i.test(message)) {
     return (
       "The page is asking for a backend function that doesn't exist on this Convex " +
@@ -21,7 +32,7 @@ function diagnose(error: Error): string | null {
       "with Ctrl + Shift + R."
     );
   }
-  if (/could not find public function|unauthorized|permission/i.test(message)) {
+  if (/unauthorized|permission/i.test(message)) {
     return "The backend rejected the request. If you just changed the schema, run `npx convex dev --once` in your Codespace and refresh.";
   }
   if (/failed to fetch|networkerror|websocket/i.test(message)) {
