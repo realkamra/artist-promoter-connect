@@ -10,43 +10,62 @@ const handleRegex = /^[a-z0-9-]{3,32}$/;
 function normalizeListing(doc: {
   _id: Id<"listings">;
   _creationTime: number;
-  handle: string;
-  name: string;
-  headline?: string;
-  about?: string;
+  handle?: unknown;
+  name?: unknown;
+  headline?: unknown;
+  about?: unknown;
   services?: unknown;
   genres?: unknown;
-  pricePerUnit?: number;
-  unit?: string;
-  minQuantity?: number;
-  followers?: number;
-  location?: string;
+  pricePerUnit?: unknown;
+  unit?: unknown;
+  minQuantity?: unknown;
+  followers?: unknown;
+  location?: unknown;
   portfolio?: unknown;
   socials?: unknown;
-  vouchCount?: number;
-  ratingSum?: number;
+  vouchCount?: unknown;
+  ratingSum?: unknown;
 }) {
+  const portfolio = Array.isArray(doc.portfolio) ? doc.portfolio : [];
+  const socials = Array.isArray(doc.socials) ? doc.socials : [];
+
+  // Return a new object instead of spreading the database document. This keeps
+  // undefined values from legacy records out of Convex's serialized response.
   return {
-    ...doc,
+    _id: doc._id,
+    _creationTime: doc._creationTime,
+    handle: typeof doc.handle === "string" ? doc.handle : "",
+    name: typeof doc.name === "string" ? doc.name : "",
     headline: typeof doc.headline === "string" ? doc.headline : "",
     about: typeof doc.about === "string" ? doc.about : "",
-    services: Array.isArray(doc.services) ? (doc.services as string[]).filter((s) => typeof s === "string") : [],
-    genres: Array.isArray(doc.genres) ? (doc.genres as string[]).filter((g) => typeof g === "string") : [],
+    services: Array.isArray(doc.services)
+      ? doc.services.filter((service): service is string => typeof service === "string")
+      : [],
+    genres: Array.isArray(doc.genres)
+      ? doc.genres.filter((genre): genre is string => typeof genre === "string")
+      : [],
     pricePerUnit: typeof doc.pricePerUnit === "number" ? doc.pricePerUnit : 0,
     unit: typeof doc.unit === "string" && doc.unit ? doc.unit : "video",
     minQuantity: typeof doc.minQuantity === "number" ? doc.minQuantity : 1,
     followers: typeof doc.followers === "number" ? doc.followers : 0,
     location: typeof doc.location === "string" ? doc.location : "",
-    portfolio: Array.isArray(doc.portfolio)
-      ? (doc.portfolio as Array<{ label?: unknown; url?: unknown }>)
-          .filter((p) => p && typeof p.url === "string")
-          .map((p) => ({ label: typeof p.label === "string" ? p.label : "", url: p.url as string }))
-      : [],
-    socials: Array.isArray(doc.socials)
-      ? (doc.socials as Array<{ platform?: unknown; url?: unknown }>)
-          .filter((s) => s && typeof s.url === "string")
-          .map((s) => ({ platform: typeof s.platform === "string" ? s.platform : "Link", url: s.url as string }))
-      : [],
+    portfolio: portfolio.flatMap((item) => {
+      if (!item || typeof item !== "object") return [];
+      const value = item as { label?: unknown; url?: unknown };
+      return typeof value.url === "string"
+        ? [{ label: typeof value.label === "string" ? value.label : "", url: value.url }]
+        : [];
+    }),
+    socials: socials.flatMap((item) => {
+      if (!item || typeof item !== "object") return [];
+      const value = item as { platform?: unknown; url?: unknown };
+      return typeof value.url === "string"
+        ? [{
+            platform: typeof value.platform === "string" ? value.platform : "Link",
+            url: value.url,
+          }]
+        : [];
+    }),
     vouchCount: typeof doc.vouchCount === "number" ? doc.vouchCount : 0,
     ratingSum: typeof doc.ratingSum === "number" ? doc.ratingSum : 0,
   };
